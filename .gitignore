@@ -1,0 +1,30 @@
+.env
+# Local multi-worktree metadata is developer-only and should never be versioned.
+# Do not store secrets or executable project scripts under this path.
+.worktrees/
+# .NET build artefacts
+backend/**/bin/
+backend/**/obj/
+backend/**/*.user
+backend/**/TestResults/
+backend/**/.vs/
+backend/**/*.suo
+backend/coverage-results/
+
+# SwiftPM build artefacts
+ios/**/.build/
+backend/coverage-run/
+# Local iOS/Xcode machine-specific artifacts from opening/running the app in Xcode.
+ios/.DS_Store
+ios/*.xcodeproj/project.xcworkspace/
+ios/*.xcodeproj/xcuserdata/
+ios/**/.swiftpm/
+ios/**/Config/*.local.xcconfig
+
+# Local build/package artifacts
+.artifacts/
+functions/**/node_modules/
+functions/**/dist/
+web/node_modules/
+agents/node_modules/
+quant/node_modules/

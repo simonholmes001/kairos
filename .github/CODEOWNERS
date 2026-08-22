@@ -1,0 +1,28 @@
+# CODEOWNERS - KAIROS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# All paths require review from the project owner.
+# Add team members here as the project grows.
+
+# Default owner for everything
+*                               @simonholmes001
+
+# Platform and CI/CD
+.github/                        @simonholmes001
+scripts/                        @simonholmes001
+infrastructure/                  @simonholmes001
+
+# Backend, agents, and quant services
+backend/                         @simonholmes001
+agents/                          @simonholmes001
+quant/                           @simonholmes001
+
+# Web client
+web/                             @simonholmes001
+
+# iOS
+ios/                            @simonholmes001
+
+# Architecture and product docs
+*.md                            @simonholmes001
+docs/                           @simonholmes001
