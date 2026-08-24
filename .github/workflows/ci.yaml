@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dir: [".", "web", "agents", "quant"]
+        dir: [".", "agents", "quant"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -79,9 +79,19 @@ jobs:
         if: steps.detect.outputs.exists == 'true'
         run: |
           if [ -f "${{ matrix.dir }}/package-lock.json" ]; then
-            npm ci --workspaces=false
+            npm ci
           else
             npm install
+          fi
+        working-directory: ${{ matrix.dir }}
+
+      - name: Run Node tests
+        if: steps.detect.outputs.exists == 'true'
+        run: |
+          if npm run | grep -q " test"; then
+            npm run test
+          else
+            echo "No test script found; skipping."
           fi
         working-directory: ${{ matrix.dir }}
 
@@ -119,12 +129,24 @@ jobs:
             dotnet test *.sln --verbosity minimal
           fi
 
-      - name: Run tests
-        if: steps.detect.outputs.exists == 'true'
+  ios-swift-tests:
+    name: iOS Swift Tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Detect Swift package
+        id: detect
+        shell: bash
         run: |
-          if npm run | grep -q " test"; then
-            npm run test
+          if [ -f "ios/KairosApp/Package.swift" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "No test script found; skipping."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "No Kairos iOS Swift package found; skipping."
           fi
-        working-directory: ${{ matrix.dir }}
+
+      - name: Run iOS Swift package tests
+        if: steps.detect.outputs.exists == 'true'
+        run: swift test --package-path ios/KairosApp

@@ -1,0 +1,12 @@
+{
+  "name": "kairos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KAIROS iOS-only agentic trading system foundation",
+  "scripts": {
+    "test": "node --test .github/scripts/*.test.mjs tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

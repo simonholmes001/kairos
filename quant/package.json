@@ -1,0 +1,12 @@
+{
+  "name": "@kairos/quant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KAIROS deterministic quant scaffold",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

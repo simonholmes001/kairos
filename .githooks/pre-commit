@@ -1,8 +1,10 @@
-#!/bin/sh
+#!/usr/bin/env bash
 set -eu
 
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "$ROOT_DIR"
+NPM_CACHE_DIR="$ROOT_DIR/.artifacts/npm-cache"
+mkdir -p "$NPM_CACHE_DIR"
 
 run_node_tests() {
   DIR="$1"
@@ -10,13 +12,13 @@ run_node_tests() {
     echo ""
     echo "Running Node tests in $DIR before commit (always)..."
     if [ -f "$DIR/package-lock.json" ]; then
-      npm --prefix "$DIR" ci --workspaces=false >/dev/null 2>&1 || npm --prefix "$DIR" ci --workspaces=false
+      npm --cache "$NPM_CACHE_DIR" --prefix "$DIR" ci --workspaces=false >/dev/null
     else
-      npm --prefix "$DIR" install >/dev/null 2>&1 || npm --prefix "$DIR" install
+      npm --cache "$NPM_CACHE_DIR" --prefix "$DIR" install >/dev/null
     fi
 
-    if npm --prefix "$DIR" run | grep -q " test"; then
-      npm --prefix "$DIR" run test
+    if node -e "const p=require('./$DIR/package.json'); process.exit(p.scripts && p.scripts.test ? 0 : 1)"; then
+      npm --cache "$NPM_CACHE_DIR" --prefix "$DIR" run test
     else
       echo "No test script in $DIR/package.json; skipping."
       return 0
@@ -59,7 +61,6 @@ run_dotnet_tests() {
 }
 
 # Run local commit guardrails
-run_node_tests "web"
 run_node_tests "agents"
 run_node_tests "quant"
 run_dotnet_tests

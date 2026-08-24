@@ -17,9 +17,6 @@ backend/                         @simonholmes001
 agents/                          @simonholmes001
 quant/                           @simonholmes001
 
-# Web client
-web/                             @simonholmes001
-
 # iOS
 ios/                            @simonholmes001
 

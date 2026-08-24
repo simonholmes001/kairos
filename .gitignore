@@ -25,6 +25,5 @@ ios/**/Config/*.local.xcconfig
 .artifacts/
 functions/**/node_modules/
 functions/**/dist/
-web/node_modules/
 agents/node_modules/
 quant/node_modules/
