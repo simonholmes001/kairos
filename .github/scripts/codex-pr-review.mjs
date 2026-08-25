@@ -52,9 +52,9 @@ if (!githubToken) {
   process.exit(1);
 }
 
-const openAiKey = process.env.OPENAI_KEY || process.env.OPENAI_API_KEY;
+const openAiKey = process.env.OPENAI_API_KEY;
 if (!openAiKey) {
-  console.error('OPENAI_KEY (or OPENAI_API_KEY) is not set.');
+  console.error('OPENAI_API_KEY is not set.');
   process.exit(1);
 }
 
