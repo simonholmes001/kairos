@@ -24,10 +24,15 @@ jobs:
         id: detect
         shell: bash
         run: |
-          if [ -d infrastructure ] && { [ -x infrastructure/scripts/validate.sh ] || find infrastructure -name '*.bicep' -print -quit | grep -q .; }; then
+          if find infrastructure -name '*.bicep' -print -quit | grep -q .; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "needs_azure=true" >> "$GITHUB_OUTPUT"
+          elif [ -d infrastructure ] && [ -x infrastructure/scripts/validate.sh ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "needs_azure=false" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "needs_azure=false" >> "$GITHUB_OUTPUT"
             echo "Kairos infrastructure is not present yet; Azure validation is skipped."
           fi
 
@@ -52,7 +57,7 @@ jobs:
           fi
 
       - name: Login to Azure (OIDC)
-        if: steps.detect.outputs.exists == 'true'
+        if: steps.detect.outputs.needs_azure == 'true'
         uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -60,7 +65,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Validate Kairos infrastructure
-        if: steps.detect.outputs.exists == 'true'
+        if: steps.detect.outputs.needs_azure == 'true'
         shell: bash
         run: |
           if [ -x ./infrastructure/scripts/validate.sh ]; then
@@ -70,7 +75,7 @@ jobs:
           fi
 
       - name: Run Kairos infrastructure what-if
-        if: steps.detect.outputs.exists == 'true'
+        if: steps.detect.outputs.needs_azure == 'true'
         shell: bash
         run: |
           if [ -x ./infrastructure/scripts/validate.sh ]; then

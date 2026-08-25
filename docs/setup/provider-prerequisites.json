@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "policy": {
+    "noSecretValuesInRepository": true,
+    "paidSubscriptionsRequireIssueLinkedApproval": true,
+    "paperAndLiveBrokerCredentialsMustBeSeparated": true
+  },
+  "providers": [
+    {
+      "name": "Azure",
+      "requiredBeforeImplementation": true,
+      "initialTier": "lowest viable dev spend",
+      "status": "operator_action_required",
+      "secretLocation": "GitHub OIDC and Azure managed identity",
+      "relatedIssues": [13, 47, 48]
+    },
+    {
+      "name": "FRED",
+      "requiredBeforeImplementation": true,
+      "initialTier": "free",
+      "status": "operator_action_required",
+      "secretLocation": "Azure Key Vault for deployed services; local ignored config for development",
+      "relatedIssues": [37]
+    },
+    {
+      "name": "SEC EDGAR",
+      "requiredBeforeImplementation": true,
+      "initialTier": "no paid subscription expected",
+      "status": "operator_action_required",
+      "secretLocation": "configuration only; no secret expected",
+      "relatedIssues": [17, 37]
+    },
+    {
+      "name": "Alpaca",
+      "requiredBeforeImplementation": true,
+      "initialTier": "paper/free where available",
+      "status": "operator_action_required",
+      "secretLocation": "Azure Key Vault; local ignored config for adapter tests",
+      "relatedIssues": [30, 43]
+    },
+    {
+      "name": "Massive",
+      "requiredBeforeImplementation": true,
+      "initialTier": "free/basic first",
+      "status": "operator_action_required",
+      "secretLocation": "Azure Key Vault; local ignored config for development",
+      "relatedIssues": [15, 16]
+    },
+    {
+      "name": "CoinGecko",
+      "requiredBeforeImplementation": true,
+      "initialTier": "demo/free first",
+      "status": "operator_action_required",
+      "secretLocation": "Azure Key Vault; local ignored config for development",
+      "relatedIssues": [15, 16]
+    },
+    {
+      "name": "Apple Developer",
+      "requiredBeforeImplementation": false,
+      "initialTier": "when iOS release starts",
+      "status": "deferred",
+      "secretLocation": "GitHub environment secrets and local ignored Xcode config",
+      "relatedIssues": [49]
+    },
+    {
+      "name": "Coinbase Developer / Advanced Trade",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer until crypto execution slice",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [30, 43]
+    },
+    {
+      "name": "CoinGlass",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer until crypto derivatives analysis",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [16, 21]
+    },
+    {
+      "name": "Quiver",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer until alternative intelligence",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [38]
+    },
+    {
+      "name": "Benzinga",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer until paid news access is needed",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [37]
+    },
+    {
+      "name": "Intrinio",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer unless lower-cost fundamentals are insufficient",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [37]
+    },
+    {
+      "name": "Interactive Brokers",
+      "requiredBeforeImplementation": false,
+      "initialTier": "defer until live brokerage readiness",
+      "status": "deferred",
+      "secretLocation": "Azure Key Vault",
+      "relatedIssues": [43, 44]
+    }
+  ]
+}
