@@ -115,7 +115,7 @@ jobs:
 
       - name: Setup .NET
         if: steps.detect.outputs.exists == 'true'
-        uses: actions/setup-dotnet@3447fd6a9f9e57506b0a8a2792bf93446efdac9a # v5
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
 
