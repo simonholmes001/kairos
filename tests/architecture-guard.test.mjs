@@ -79,3 +79,13 @@ test("Azure dev deploy workflow uses OIDC and deploys only from main", () => {
   assert.equal(workflow.includes("validate.sh dev --what-if"), true);
   assert.equal(workflow.includes("validate.sh dev --deploy"), true);
 });
+
+test("PR infrastructure validation is lint-only and does not require Azure OIDC", () => {
+  const workflow = readFileSync(join(root, ".github/workflows/infrastructure-validate.yaml"), "utf8");
+  assert.equal(workflow.includes("pull_request:"), true);
+  assert.equal(workflow.includes("id-token: write"), false);
+  assert.equal(workflow.includes("azure/login@"), false);
+  assert.equal(workflow.includes("validate.sh dev --lint-only"), true);
+  assert.equal(workflow.includes("validate.sh dev --what-if"), false);
+  assert.equal(workflow.includes("validate.sh dev --deploy"), false);
+});

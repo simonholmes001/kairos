@@ -9,13 +9,11 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   validate-dev:
-    name: Validate Dev Infrastructure
+    name: Validate Dev Infrastructure Lint
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -26,13 +24,10 @@ jobs:
         run: |
           if find infrastructure -name '*.bicep' -print -quit | grep -q .; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "needs_azure=true" >> "$GITHUB_OUTPUT"
           elif [ -d infrastructure ] && [ -x infrastructure/scripts/validate.sh ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "needs_azure=false" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "needs_azure=false" >> "$GITHUB_OUTPUT"
             echo "Kairos infrastructure is not present yet; Azure validation is skipped."
           fi
 
@@ -54,32 +49,4 @@ jobs:
             for file in $(find infrastructure -name '*.bicep'); do
               az bicep build --file "$file"
             done
-          fi
-
-      - name: Login to Azure (OIDC)
-        if: steps.detect.outputs.needs_azure == 'true'
-        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Validate Kairos infrastructure
-        if: steps.detect.outputs.needs_azure == 'true'
-        shell: bash
-        run: |
-          if [ -x ./infrastructure/scripts/validate.sh ]; then
-            bash ./infrastructure/scripts/validate.sh dev
-          else
-            echo "No validate.sh present; lint-only Bicep validation completed."
-          fi
-
-      - name: Run Kairos infrastructure what-if
-        if: steps.detect.outputs.needs_azure == 'true'
-        shell: bash
-        run: |
-          if [ -x ./infrastructure/scripts/validate.sh ]; then
-            bash ./infrastructure/scripts/validate.sh dev --what-if
-          else
-            echo "No validate.sh present; what-if skipped."
           fi
