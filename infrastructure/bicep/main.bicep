@@ -55,9 +55,10 @@ resource platformResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' =
 module platform 'platform.bicep' = {
   name: 'kairos-${environment}-platform'
   scope: platformResourceGroup
-  # The explicit dependency documents the bootstrap ordering required for a fresh subscription.
+  // The explicit dependency documents the bootstrap ordering required for a fresh subscription.
   #disable-next-line no-unnecessary-dependson
   dependsOn: [
+    #disable-next-line no-unnecessary-dependson
     platformResourceGroup
   ]
   params: {
@@ -74,10 +75,12 @@ module platform 'platform.bicep' = {
 module network 'network.bicep' = {
   name: 'kairos-${environment}-network'
   scope: networkResourceGroup
-  # The explicit dependency documents both target-RG creation and platform output ordering.
+  // The explicit dependency documents both target-RG creation and platform output ordering.
   #disable-next-line no-unnecessary-dependson
   dependsOn: [
+    #disable-next-line no-unnecessary-dependson
     networkResourceGroup
+    #disable-next-line no-unnecessary-dependson
     platform
   ]
   params: {
