@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/decision-record.schema.json",
+  "title": "DecisionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decisionRecordId", "recordType", "inputs", "outputs", "createdAt", "immutableHash"],
+  "properties": {
+    "decisionRecordId": { "type": "string", "minLength": 1 },
+    "recordType": { "enum": ["research", "proposal", "risk", "approval", "execution", "evaluation"] },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "agentRunIds": { "type": "array", "items": { "type": "string" } },
+    "modelCalls": { "type": "array", "items": { "type": "string" } },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "immutableHash": { "type": "string", "minLength": 1 }
+  }
+}

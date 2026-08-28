@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/portfolio.schema.json",
+  "title": "Portfolio",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["portfolioId", "baseCurrency", "cash", "equity", "asOf"],
+  "properties": {
+    "portfolioId": { "type": "string", "minLength": 1 },
+    "baseCurrency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "cash": { "type": "number" },
+    "equity": { "type": "number", "minimum": 0 },
+    "grossExposure": { "type": "number", "minimum": 0 },
+    "netExposure": { "type": "number" },
+    "asOf": { "type": "string", "format": "date-time" }
+  }
+}

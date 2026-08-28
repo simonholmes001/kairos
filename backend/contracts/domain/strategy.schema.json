@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/strategy.schema.json",
+  "title": "Strategy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["strategyId", "name", "mode", "riskPolicyVersion", "status"],
+  "properties": {
+    "strategyId": { "type": "string", "minLength": 1 },
+    "name": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["research", "paper", "live_disabled"] },
+    "riskPolicyVersion": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["draft", "active", "paused", "retired"] },
+    "description": { "type": "string" }
+  }
+}

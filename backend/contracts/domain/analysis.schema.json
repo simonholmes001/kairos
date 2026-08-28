@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/analysis.schema.json",
+  "title": "Analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["analysisId", "analysisType", "instrumentIds", "generatedBy", "generatedAt", "inputs", "summary"],
+  "properties": {
+    "analysisId": { "type": "string", "minLength": 1 },
+    "analysisType": { "enum": ["fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"] },
+    "instrumentIds": { "type": "array", "items": { "type": "string" } },
+    "generatedBy": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string", "minLength": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

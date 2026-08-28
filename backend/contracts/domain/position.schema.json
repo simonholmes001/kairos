@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/position.schema.json",
+  "title": "Position",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["portfolioId", "instrumentId", "quantity", "averageCost", "currency", "asOf"],
+  "properties": {
+    "portfolioId": { "type": "string", "minLength": 1 },
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "quantity": { "type": "number" },
+    "averageCost": { "type": "number", "minimum": 0 },
+    "marketValue": { "type": "number" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "asOf": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "environments": {
+    "dev": {
+      "monthlyBudget": 50,
+      "logRetentionDays": 30,
+      "logDailyCapGb": 1,
+      "allowedLocations": ["swedencentral"],
+      "requiredTags": ["workload", "environment", "owner", "costCenter", "dataTier", "shutdownPolicy", "managedBy"]
+    },
+    "test": {
+      "monthlyBudget": 75,
+      "logRetentionDays": 30,
+      "logDailyCapGb": 1
+    },
+    "paper": {
+      "monthlyBudget": 150,
+      "logRetentionDays": 60,
+      "logDailyCapGb": 2
+    },
+    "live": {
+      "monthlyBudget": 300,
+      "logRetentionDays": 90,
+      "logDailyCapGb": 5
+    }
+  },
+  "allowedBaselineSkus": {
+    "storage": ["Standard_LRS"],
+    "keyVault": ["standard"],
+    "logAnalytics": ["PerGB2018"]
+  },
+  "deferredServices": [
+    "api-management",
+    "front-door-or-cdn",
+    "web-pubsub",
+    "managed-redis",
+    "data-explorer",
+    "event-hubs",
+    "ai-search",
+    "service-bus",
+    "web-app-hosting",
+    "container-apps"
+  ],
+  "messagingDecisionRules": {
+    "storageQueue": "Use for simple low-cost async work and retryable ingestion jobs.",
+    "serviceBus": "Use only for high-value commands needing sessions, duplicate detection, dead-lettering, or transactions.",
+    "eventHubs": "Use only for high-volume streaming/replay after cost approval.",
+    "eventGrid": "Use only for reactive notifications where push fan-out is needed."
+  },
+  "circuitBreakers": {
+    "providerCallsPerWorkflow": 100,
+    "llmCallsPerWorkflow": 20,
+    "maxWorkflowCostUsd": 5
+  }
+}

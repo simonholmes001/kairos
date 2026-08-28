@@ -11,7 +11,10 @@ const deferredAzurePatterns = [
   "Microsoft.Cache/Redis",
   "Microsoft.Kusto/",
   "Microsoft.EventHub/",
-  "Microsoft.Search/searchServices"
+  "Microsoft.Search/searchServices",
+  "Microsoft.Web/sites",
+  "Microsoft.App/containerApps",
+  "Microsoft.ServiceBus/"
 ];
 
 function walk(dir, predicate = () => true) {
@@ -45,4 +48,34 @@ test("infrastructure does not include deferred Azure services", () => {
       assert.equal(body.includes(pattern), false, `${file} includes deferred Azure service ${pattern}`);
     }
   }
+});
+
+test("dev IaC baseline includes private data and cost controls", () => {
+  const bicep = readFileSync(join(root, "infrastructure/bicep/main.bicep"), "utf8");
+  for (const pattern of [
+    "Microsoft.Network/privateEndpoints",
+    "Microsoft.Network/privateDnsZones",
+    "Microsoft.KeyVault/vaults",
+    "Microsoft.Storage/storageAccounts",
+    "publicNetworkAccess: 'Disabled'",
+    "Microsoft.Consumption/budgets"
+  ]) {
+    assert.equal(bicep.includes(pattern), true, `main.bicep is missing ${pattern}`);
+  }
+});
+
+test("resource group bootstrap is subscription scoped and separate", () => {
+  const rgBicep = readFileSync(join(root, "infrastructure/bicep/resource-group.bicep"), "utf8");
+  assert.equal(rgBicep.includes("targetScope = 'subscription'"), true);
+  assert.equal(rgBicep.includes("Microsoft.Resources/resourceGroups"), true);
+});
+
+test("Azure dev deploy workflow uses OIDC and deploys only from main", () => {
+  const workflow = readFileSync(join(root, ".github/workflows/azure-dev-deploy.yaml"), "utf8");
+  assert.equal(workflow.includes("branches: [main]"), true);
+  assert.equal(workflow.includes("id-token: write"), true);
+  assert.equal(workflow.includes("azure/login@"), true);
+  assert.equal(workflow.includes("environment: dev"), true);
+  assert.equal(workflow.includes("validate.sh dev --what-if"), true);
+  assert.equal(workflow.includes("validate.sh dev --deploy"), true);
 });

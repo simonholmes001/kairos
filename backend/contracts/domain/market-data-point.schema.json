@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/market-data-point.schema.json",
+  "title": "MarketDataPoint",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instrumentId", "asOf", "provider", "dataType", "value", "provenance"],
+  "properties": {
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "asOf": { "type": "string", "format": "date-time" },
+    "provider": { "type": "string", "minLength": 1 },
+    "dataType": {
+      "enum": ["price", "ohlcv", "quote", "fundamental", "macro", "sentiment", "filing"]
+    },
+    "value": { "type": ["number", "object", "string", "boolean"] },
+    "provenance": { "$ref": "./provenance.schema.json" }
+  }
+}

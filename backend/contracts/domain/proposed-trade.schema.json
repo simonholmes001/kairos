@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/proposed-trade.schema.json",
+  "title": "ProposedTrade",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "proposalId",
+    "instrumentId",
+    "side",
+    "quantity",
+    "timeHorizon",
+    "confidence",
+    "thesis",
+    "invalidators",
+    "generatedBy",
+    "generatedAt"
+  ],
+  "properties": {
+    "proposalId": { "type": "string", "minLength": 1 },
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "side": { "enum": ["buy", "sell", "hold", "no_trade"] },
+    "quantity": { "type": "number", "minimum": 0 },
+    "targetWeight": { "type": "number", "minimum": 0, "maximum": 1 },
+    "timeHorizon": { "enum": ["intraday", "days", "weeks", "months"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "thesis": { "type": "string", "minLength": 1 },
+    "invalidators": { "type": "array", "items": { "type": "string" } },
+    "evidenceIds": { "type": "array", "items": { "type": "string" } },
+    "generatedBy": { "type": "string", "minLength": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" }
+  }
+}

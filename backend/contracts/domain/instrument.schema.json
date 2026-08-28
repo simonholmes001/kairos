@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/instrument.schema.json",
+  "title": "Instrument",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["instrumentId", "symbol", "assetClass", "venue", "currency", "status"],
+  "properties": {
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "symbol": { "type": "string", "minLength": 1 },
+    "name": { "type": "string" },
+    "assetClass": { "enum": ["equity", "crypto", "cash", "fund", "index", "fx"] },
+    "venue": { "type": "string", "minLength": 1 },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "status": { "enum": ["active", "inactive", "delisted", "suspended"] },
+    "providerRefs": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/order.schema.json",
+  "title": "Order",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["orderId", "proposalId", "instrumentId", "side", "quantity", "state", "idempotencyKey"],
+  "properties": {
+    "orderId": { "type": "string", "minLength": 1 },
+    "proposalId": { "type": "string", "minLength": 1 },
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "side": { "enum": ["buy", "sell"] },
+    "quantity": { "type": "number", "exclusiveMinimum": 0 },
+    "state": {
+      "enum": ["draft", "approved", "submitted", "partially_filled", "filled", "cancel_requested", "cancelled", "rejected", "failed"]
+    },
+    "idempotencyKey": { "type": "string", "minLength": 1 },
+    "brokerOrderId": { "type": "string" }
+  }
+}
