@@ -4,7 +4,7 @@ import { createIngestionPipeline } from "../src/marketDataIngestion.mjs";
 import { createInstrument, createMarketDataPoint, stableInstrumentId } from "../src/marketDataContracts.mjs";
 import { assessFreshness, createProvenance, requireUsableProvenance } from "../src/provenance.mjs";
 import { createTelemetry } from "../src/observability.mjs";
-import { createAlpacaProvider } from "../src/providerAdapters.mjs";
+import { createAlpacaProvider, createCoinGeckoProvider } from "../src/providerAdapters.mjs";
 import { createMarketDataStore } from "../src/marketDataStore.mjs";
 
 test("instrument identity is stable and provider-independent", () => {
@@ -67,6 +67,19 @@ test("Alpaca adapter keeps credentials in headers and normalizes bars", async ()
   assert.equal(records[0].dataType, "ohlcv");
   assert.equal(request.options.headers["APCA-API-KEY-ID"], "key");
   assert.equal(request.url.includes("secret"), false);
+});
+
+test("CoinGecko adapter uses the API header and normalizes prices", async () => {
+  let request;
+  const provider = createCoinGeckoProvider({ apiKey: "demo", fetchImpl: async (url, options) => {
+    request = { url: String(url), options };
+    return { ok: true, async json() { return { bitcoin: { usd: 42_000 } }; } };
+  } });
+  const records = await provider.fetch({ ids: ["bitcoin"], currency: "usd", observedAt: "2026-01-01T00:00:00Z" });
+  assert.equal(records[0].value, 42_000);
+  assert.equal(records[0].instrumentId.startsWith("ins_"), true);
+  assert.equal(request.options.headers["x-cg-demo-api-key"], "demo");
+  assert.match(request.url, /ids=bitcoin/);
 });
 
 test("telemetry redacts credentials while retaining correlation", () => {

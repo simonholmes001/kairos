@@ -7,8 +7,9 @@ import { createSpecialistAgent } from "../src/specialistAgents.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
-  assert.throws(() => validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t" }), /evidenceIds/);
-  assert.equal(validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "no_trade", horizon: "short_term", thesis: "insufficient evidence" }).signal, "no_trade");
+  assert.throws(() => validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t", confidence: 0.8 }), /evidenceIds/);
+  assert.equal(validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "no_trade", horizon: "short_term", thesis: "insufficient evidence", confidence: 0.1 }).signal, "no_trade");
+  assert.throws(() => validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "neutral", horizon: "short_term", thesis: "t", confidence: 2 }), /confidence/);
 });
 
 test("tool gateway denies broker writes and arbitrary unregistered tools", async () => {
@@ -25,7 +26,7 @@ test("model router records provider-neutral completion and controlled failure", 
 });
 
 test("research orchestrator isolates agent failure and does not expose execution", async () => {
-  const good = createSpecialistAgent({ name: "technical", analysisType: "technical", signal: "bullish", run: async () => ({ analysisId: "a", thesis: "trend", evidenceIds: ["e1"] }) });
+  const good = createSpecialistAgent({ name: "technical", analysisType: "technical", signal: "bullish", confidence: 0.7, run: async () => ({ analysisId: "a", thesis: "trend", evidenceIds: ["e1"] }) });
   const bad = createSpecialistAgent({ name: "broken", analysisType: "sentiment", run: async () => { throw new Error("provider timeout"); } });
   const result = await createResearchOrchestrator({ agents: [good, bad] }).run({ instrumentId: "i", correlationId: "c" });
   assert.equal(result.analyses.length, 1);

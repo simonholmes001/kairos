@@ -7,6 +7,10 @@ function required(value, name) {
 }
 
 export function validateAgentAnalysis(input) {
+  if (!input || typeof input !== "object") throw new TypeError("analysis response must be an object");
+  if (!Number.isFinite(input.confidence) || input.confidence < 0 || input.confidence > 1) {
+    throw new RangeError("confidence must be a number between 0 and 1");
+  }
   const output = {
     analysisId: required(input.analysisId, "analysisId"),
     agent: required(input.agent, "agent"),
@@ -14,6 +18,7 @@ export function validateAgentAnalysis(input) {
     signal: required(input.signal, "signal"),
     horizon: required(input.horizon, "horizon"),
     thesis: required(input.thesis, "thesis"),
+    confidence: input.confidence,
     risks: Array.isArray(input.risks) ? [...input.risks] : [],
     missingData: Array.isArray(input.missingData) ? [...input.missingData] : [],
     evidenceIds: Array.isArray(input.evidenceIds) ? [...input.evidenceIds] : [],
