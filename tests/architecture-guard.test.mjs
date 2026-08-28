@@ -51,7 +51,9 @@ test("infrastructure does not include deferred Azure services", () => {
 });
 
 test("dev IaC baseline includes private data and cost controls", () => {
-  const bicep = readFileSync(join(root, "infrastructure/bicep/main.bicep"), "utf8");
+  const bicep = walk(join(root, "infrastructure/bicep"), (path) => path.endsWith(".bicep"))
+    .map((path) => readFileSync(path, "utf8"))
+    .join("\n");
   for (const pattern of [
     "Microsoft.Network/privateEndpoints",
     "Microsoft.Network/privateDnsZones",
@@ -60,8 +62,20 @@ test("dev IaC baseline includes private data and cost controls", () => {
     "publicNetworkAccess: 'Disabled'",
     "Microsoft.Consumption/budgets"
   ]) {
-    assert.equal(bicep.includes(pattern), true, `main.bicep is missing ${pattern}`);
+    assert.equal(bicep.includes(pattern), true, `dev Bicep is missing ${pattern}`);
   }
+});
+
+test("dev IaC keeps network and platform resource boundaries explicit", () => {
+  const main = readFileSync(join(root, "infrastructure/bicep/main.bicep"), "utf8");
+  const network = readFileSync(join(root, "infrastructure/bicep/network.bicep"), "utf8");
+  const platform = readFileSync(join(root, "infrastructure/bicep/platform.bicep"), "utf8");
+  assert.match(main, /rg-\$\{normalized\}-network/);
+  assert.match(main, /rg-\$\{normalized\}-platform/);
+  assert.match(network, /resourceBoundary: 'network'/);
+  assert.match(platform, /resourceBoundary: 'platform'/);
+  assert.match(main, /module platform[\s\S]*dependsOn:[\s\S]*platformResourceGroup/);
+  assert.match(main, /module network[\s\S]*dependsOn:[\s\S]*networkResourceGroup[\s\S]*platform/);
 });
 
 test("resource group bootstrap is subscription scoped and separate", () => {
