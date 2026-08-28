@@ -29,6 +29,9 @@ done < <(find infrastructure -type f \( -name '*.bicep' -o -name '*.bicepparam' 
 
 if find infrastructure -name '*.bicep' -print -quit | grep -q .; then
   REQUIRED_PATTERNS=(
+    "targetScope = 'subscription'"
+    "resourceBoundary: 'network'"
+    "resourceBoundary: 'platform'"
     "Microsoft.Network/privateEndpoints"
     "Microsoft.Network/privateDnsZones"
     "Microsoft.KeyVault/vaults"
@@ -38,11 +41,16 @@ if find infrastructure -name '*.bicep' -print -quit | grep -q .; then
   )
 
   for pattern in "${REQUIRED_PATTERNS[@]}"; do
-    if ! grep -R -q "$pattern" infrastructure/**/*.bicep infrastructure/*.bicep 2>/dev/null; then
+    if ! grep -R -q --include='*.bicep' "$pattern" infrastructure 2>/dev/null; then
       echo "::error::Required private/cost baseline pattern missing: $pattern"
       FOUND=1
     fi
   done
+
+  if grep -R -q -- "--resource-group.*rg-kairos-dev" infrastructure/bicep infrastructure/scripts/validate.sh .github/workflows 2>/dev/null; then
+    echo "::error::The Kairos deployment must use subscription scope to coordinate the network and platform resource groups."
+    FOUND=1
+  fi
 fi
 
 if find . -path './.git' -prune -o -path './ios/KairosApp/.build' -prune -o -type d -name web -print -quit | grep -q .; then

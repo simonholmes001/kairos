@@ -6,11 +6,16 @@ Accepted for implementation slice #12, #13, #14, and #47.
 
 ## Context
 
-KAIROS needs an Azure development baseline before backend, agent, risk, execution, and iOS API work can depend on cloud resources. The system has one operator and an iOS-only UI, so the first Azure footprint must stay small, private-network-first, and cost-controlled.
+KAIROS needs an Azure development baseline before backend, agent, risk, execution, and iOS API work can depend on cloud resources. The system has one operator and an iOS-only UI, so the first Azure footprint must stay small, private-network-first, and cost-controlled. There is one deployment environment: `dev`.
 
 ## Decision
 
-Provision a resource-group-scoped dev baseline in Bicep:
+Provision a subscription-orchestrated dev baseline in Bicep across two resource groups:
+
+- `rg-kairos-dev-network` owns the VNet, subnets, private DNS zones, DNS links, and private endpoints.
+- `rg-kairos-dev-platform` owns Storage, Key Vault, the user-assigned managed identity, Log Analytics, Application Insights, and the budget.
+
+`main.bicep` creates both resource groups and passes platform resource IDs into the network module. CI/CD deploys this composition; there are no test, staging, or production variants.
 
 - VNet with separate runtime and private endpoint subnets
 - private DNS zones and private endpoints for Key Vault and Storage data paths
@@ -47,6 +52,7 @@ This keeps the first platform slice aligned with the product decision: automated
 
 - The first Bicep validation can run without provisioning compute.
 - Private endpoints increase baseline cost, but they satisfy the private-network requirement for data and secrets.
+- Resource-group separation improves ownership, access control, cost attribution, and lifecycle management without introducing another environment.
+- The existing `rg-kairos-dev` deployment is treated as a legacy migration source. It is not deleted automatically; moving or retiring those resources requires a separately verified migration operation to protect existing data and secrets.
 - App Insights public access is disabled in the target configuration; runtime connectivity through Azure Monitor private link must be reviewed when compute is added.
 - PostgreSQL is deferred until ledger/decision-record persistence is implemented.
-
