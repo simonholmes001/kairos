@@ -4,12 +4,16 @@
   "title": "Provenance",
   "type": "object",
   "additionalProperties": false,
-  "required": ["sourceId", "sourceAuthority", "retrievedAt", "entitlement"],
+  "required": ["evidenceId", "sourceId", "sourceAuthority", "retrievedAt", "quality", "entitlement"],
   "properties": {
+    "evidenceId": { "type": "string", "minLength": 1 },
     "sourceId": { "type": "string", "minLength": 1 },
     "sourceAuthority": { "enum": ["primary", "provider", "derived", "operator", "simulation"] },
     "retrievedAt": { "type": "string", "format": "date-time" },
+    "sourceTime": { "type": "string", "format": "date-time" },
     "sourceUrl": { "type": "string" },
+    "quality": { "enum": ["current", "delayed", "stale", "estimated", "alternative", "unverified", "missing"] },
+    "qualityFlags": { "type": "array", "items": { "type": "string" } },
     "entitlement": {
       "type": "object",
       "additionalProperties": false,
