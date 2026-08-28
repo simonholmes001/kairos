@@ -1,7 +1,7 @@
 import { createMarketDataPoint } from "./marketDataContracts.mjs";
 import { createProvenance, requireUsableProvenance } from "./provenance.mjs";
 
-export function createIngestionPipeline({ provider, clock = () => new Date(), logger = () => {} }) {
+export function createIngestionPipeline({ provider, store, clock = () => new Date(), logger = () => {} }) {
   if (!provider || typeof provider.fetch !== "function") throw new TypeError("provider.fetch is required");
   return Object.freeze({
     async ingest(request) {
@@ -20,6 +20,7 @@ export function createIngestionPipeline({ provider, clock = () => new Date(), lo
           requireUsableProvenance(provenance);
           return createMarketDataPoint({ ...record, provider: provider.name, ingestedAt: clock(), provenance });
         });
+        if (store) store.put(normalized);
         logger({ event: "market_data.ingestion.completed", provider: provider.name, count: normalized.length, startedAt: startedAt.toISOString() });
         return normalized;
       } catch (error) {
