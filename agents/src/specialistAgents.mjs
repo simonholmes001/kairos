@@ -6,7 +6,15 @@ export function createSpecialistAgent({ name, analysisType, signal = "neutral", 
     name,
     async run(context) {
       const result = await run(context);
-      return validateAgentAnalysis({ ...result, agent: name, analysisType, instrumentId: context.instrumentId, signal, horizon, confidence });
+      return validateAgentAnalysis({
+        ...result,
+        agent: name,
+        analysisType,
+        instrumentId: context.instrumentId,
+        signal: result.signal ?? signal,
+        horizon: result.horizon ?? horizon,
+        confidence: result.confidence ?? confidence
+      });
     }
   });
 }

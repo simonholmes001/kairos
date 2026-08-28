@@ -1,12 +1,37 @@
 const defaultAssignments = Object.freeze({ research: "openai", summarization: "openai", extraction: "openai" });
 
+function requiredApiKey(apiKey) {
+  if (typeof apiKey !== "string" || apiKey.trim() === "") throw new TypeError("OPENAI_API_KEY is required");
+  return apiKey.trim();
+}
+
+export function createOpenAiProvider({ apiKey = process.env.OPENAI_API_KEY, model = "gpt-4.1-mini", fetchImpl = fetch, baseUrl = "https://api.openai.com" } = {}) {
+  const key = requiredApiKey(apiKey);
+  return Object.freeze({
+    async complete({ messages, metadata = {} }) {
+      const response = await fetchImpl(new URL("/v1/responses", baseUrl), {
+        method: "POST",
+        headers: { accept: "application/json", "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model, input: messages, store: false, ...metadata })
+      });
+      if (!response.ok) throw new Error(`OpenAI returned HTTP ${response.status}`);
+      const payload = await response.json();
+      const output = payload.output_text ?? payload.output?.flatMap((item) => item.content ?? []).find((item) => item.type === "output_text")?.text;
+      if (typeof output !== "string") throw new Error("OpenAI response did not contain output text");
+      return { model: payload.model ?? model, output, cost: payload.usage?.total_tokens };
+    }
+  });
+}
+
 export function createModelRouter({ providers = {}, assignments = defaultAssignments, telemetry = { emit: () => {} } } = {}) {
   return Object.freeze({
     async complete({ task, messages, correlationId, metadata = {} }) {
-      const providerName = assignments[task] ?? assignments.research;
+      const configured = assignments[task] ?? assignments.research;
+      const providerNames = Array.isArray(configured) ? configured : [configured];
+      const providerName = providerNames.find((name) => providers[name] && typeof providers[name].complete === "function");
       const provider = providers[providerName];
-      if (!provider || typeof provider.complete !== "function") {
-        return { ok: false, error: { code: "MODEL_UNAVAILABLE", message: `No model provider configured for ${providerName}`, retryable: false } };
+      if (!provider) {
+        return { ok: false, error: { code: "MODEL_UNAVAILABLE", message: `No model provider configured for ${providerNames.join(", ")}`, retryable: false } };
       }
       const startedAt = Date.now();
       try {
