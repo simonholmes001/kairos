@@ -18,16 +18,16 @@ esac
 bash ./infrastructure/scripts/guard-tests.sh
 
 if [ "$MODE" = "--what-if" ]; then
-  az deployment group what-if \
-    --resource-group "rg-kairos-${ENVIRONMENT}" \
+  az deployment sub what-if \
+    --location "${AZURE_LOCATION:-swedencentral}" \
     --template-file infrastructure/bicep/main.bicep \
     --parameters infrastructure/bicep/environments/${ENVIRONMENT}.bicepparam
   exit 0
 fi
 
 if [ "$MODE" = "--deploy" ]; then
-  az deployment group create \
-    --resource-group "rg-kairos-${ENVIRONMENT}" \
+  az deployment sub create \
+    --location "${AZURE_LOCATION:-swedencentral}" \
     --name "kairos-${ENVIRONMENT}-$(date -u +%Y%m%d%H%M%S)" \
     --template-file infrastructure/bicep/main.bicep \
     --parameters infrastructure/bicep/environments/${ENVIRONMENT}.bicepparam

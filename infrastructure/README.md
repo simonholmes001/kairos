@@ -6,26 +6,25 @@ Initial infrastructure work must stay serverless-first and private-network-first
 
 ## Dev Baseline
 
-The active Bicep baseline is resource-group scoped:
+The active Bicep baseline is subscription-orchestrated and has one environment, `dev`:
 
 ```text
 infrastructure/bicep/resource-group.bicep
 infrastructure/bicep/environments/dev-resource-group.bicepparam
 infrastructure/bicep/main.bicep
 infrastructure/bicep/environments/dev.bicepparam
+infrastructure/bicep/platform.bicep
+infrastructure/bicep/network.bicep
 ```
 
 It provisions:
 
-- optional subscription-scope resource group bootstrap
-- VNet with runtime and private endpoint subnets
-- private DNS zones
-- private endpoints for Key Vault and Storage blob/dfs/queue
-- StorageV2 with Data Lake namespace and public access disabled
-- Key Vault with RBAC authorization and public access disabled
-- user-assigned managed identity for future workloads
-- Log Analytics and Application Insights
-- resource-group budget
+The deployment creates exactly two resource groups for `dev`:
+
+- `rg-kairos-dev-network`: VNet, subnets, private DNS zones, DNS links, and private endpoints.
+- `rg-kairos-dev-platform`: Storage, Key Vault, managed identity, Log Analytics, Application Insights, and budget.
+
+The network module consumes the platform resource IDs as explicit cross-resource-group inputs. This keeps private connectivity in the network boundary while keeping business/platform resources in their own boundary.
 
 FinOps policy and runbook:
 
@@ -43,13 +42,13 @@ bash infrastructure/scripts/guard-tests.sh
 bash infrastructure/scripts/validate.sh dev --lint-only
 ```
 
-Run what-if after `rg-kairos-dev` exists and GitHub/Azure OIDC has the required resource-group permissions:
+Run what-if with subscription-scope permissions:
 
 ```bash
 bash infrastructure/scripts/validate.sh dev --what-if
 ```
 
-Resource group bootstrap is separated because it requires subscription-scope permissions. Normal GitHub deployment should use resource-group scope after `rg-kairos-dev` exists.
+The subscription-scoped deployment creates both resource groups and then deploys the platform and network modules in dependency order. The GitHub OIDC identity therefore requires the `Contributor` role at the Kairos subscription scope, or an equivalent custom role that can create resource groups and deploy the required resources.
 
 ## CI/CD Deployment
 
@@ -61,4 +60,6 @@ AZURE_TENANT_ID
 AZURE_SUBSCRIPTION_ID
 ```
 
-The workflow runs lint validation, group what-if, and then resource-group deployment into `rg-kairos-dev`.
+The workflow runs lint validation, subscription what-if, and then subscription deployment into the two `dev` resource groups.
+
+The previous `rg-kairos-dev` baseline is not automatically deleted or moved by this change. Migration and retirement of that legacy group must be a separate, verified operation so existing data and secrets are not destroyed.
