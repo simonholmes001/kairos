@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/command.schema.json",
+  "title": "Command",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["commandId", "commandType", "requestedAt", "requestedBy", "correlationId", "idempotencyKey", "payload"],
+  "properties": {
+    "commandId": { "type": "string", "minLength": 1 },
+    "commandType": {
+      "enum": [
+        "ingest.market_data",
+        "run.analysis",
+        "propose.trade",
+        "assess.risk",
+        "approve.proposal",
+        "reject.proposal",
+        "submit.order",
+        "cancel.order",
+        "change.kill_switch",
+        "change.autonomy_mode"
+      ]
+    },
+    "requestedAt": { "type": "string", "format": "date-time" },
+    "requestedBy": { "type": "string", "minLength": 1 },
+    "correlationId": { "type": "string", "minLength": 1 },
+    "causationId": { "type": "string" },
+    "idempotencyKey": { "type": "string", "minLength": 1 },
+    "payload": { "type": "object" }
+  }
+}

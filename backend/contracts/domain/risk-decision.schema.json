@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/risk-decision.schema.json",
+  "title": "RiskDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decisionId", "proposalId", "outcome", "reasons", "policyVersion", "decidedAt"],
+  "properties": {
+    "decisionId": { "type": "string", "minLength": 1 },
+    "proposalId": { "type": "string", "minLength": 1 },
+    "outcome": { "enum": ["approved", "reduced", "rejected", "blocked"] },
+    "approvedQuantity": { "type": "number", "minimum": 0 },
+    "reasons": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "policyVersion": { "type": "string", "minLength": 1 },
+    "decidedAt": { "type": "string", "format": "date-time" }
+  }
+}

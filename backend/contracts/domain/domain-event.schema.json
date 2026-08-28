@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/domain-event.schema.json",
+  "title": "DomainEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "occurredAt", "correlationId", "schemaVersion", "payload"],
+  "properties": {
+    "eventId": { "type": "string", "minLength": 1 },
+    "eventType": {
+      "enum": [
+        "instrument.updated",
+        "market_data.ingested",
+        "trade.proposed",
+        "risk.decided",
+        "approval.changed",
+        "order.submitted",
+        "order.filled",
+        "ledger.entry_appended",
+        "decision.recorded",
+        "kill_switch.changed"
+      ]
+    },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "correlationId": { "type": "string", "minLength": 1 },
+    "causationId": { "type": "string" },
+    "schemaVersion": { "type": "string", "pattern": "^v[0-9]+$" },
+    "payload": { "type": "object" }
+  }
+}

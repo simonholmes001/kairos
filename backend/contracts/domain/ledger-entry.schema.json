@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/ledger-entry.schema.json",
+  "title": "LedgerEntry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entryId", "accountId", "entryType", "amount", "currency", "occurredAt", "sourceEventId"],
+  "properties": {
+    "entryId": { "type": "string", "minLength": 1 },
+    "accountId": { "type": "string", "minLength": 1 },
+    "instrumentId": { "type": "string" },
+    "entryType": { "enum": ["cash", "position", "fee", "dividend", "realized_pnl", "unrealized_pnl_adjustment"] },
+    "amount": { "type": "number" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "sourceEventId": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,46 @@
+name: Azure Dev Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/**"
+      - ".github/workflows/azure-dev-deploy.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: azure-dev-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-dev:
+    name: Deploy Dev Infrastructure
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@f5d393ae46f8fde4be8b75f32e3fc50e654ad0ca # v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Kairos IaC
+        shell: bash
+        run: bash infrastructure/scripts/validate.sh dev --lint-only
+
+      - name: Preview Kairos dev changes
+        shell: bash
+        run: bash infrastructure/scripts/validate.sh dev --what-if
+
+      - name: Deploy Kairos dev infrastructure
+        shell: bash
+        run: bash infrastructure/scripts/validate.sh dev --deploy

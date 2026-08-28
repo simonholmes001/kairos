@@ -1,0 +1,13 @@
+{
+  "name": "@kairos/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "KAIROS backend domain and authorization foundation",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/domain/fill.schema.json",
+  "title": "Fill",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fillId", "orderId", "instrumentId", "quantity", "price", "currency", "filledAt", "sourceEventId"],
+  "properties": {
+    "fillId": { "type": "string", "minLength": 1 },
+    "orderId": { "type": "string", "minLength": 1 },
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "quantity": { "type": "number", "exclusiveMinimum": 0 },
+    "price": { "type": "number", "minimum": 0 },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+    "fees": { "type": "number", "minimum": 0 },
+    "filledAt": { "type": "string", "format": "date-time" },
+    "sourceEventId": { "type": "string", "minLength": 1 }
+  }
+}

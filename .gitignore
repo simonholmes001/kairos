@@ -23,7 +23,9 @@ ios/**/Config/*.local.xcconfig
 
 # Local build/package artifacts
 .artifacts/
+infrastructure/bicep/**/*.json
 functions/**/node_modules/
 functions/**/dist/
 agents/node_modules/
+backend/node_modules/
 quant/node_modules/

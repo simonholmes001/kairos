@@ -18,7 +18,19 @@ esac
 bash ./infrastructure/scripts/guard-tests.sh
 
 if [ "$MODE" = "--what-if" ]; then
-  echo "No Kairos Azure resources are defined yet; what-if is intentionally empty."
+  az deployment group what-if \
+    --resource-group "rg-kairos-${ENVIRONMENT}" \
+    --template-file infrastructure/bicep/main.bicep \
+    --parameters infrastructure/bicep/environments/${ENVIRONMENT}.bicepparam
+  exit 0
+fi
+
+if [ "$MODE" = "--deploy" ]; then
+  az deployment group create \
+    --resource-group "rg-kairos-${ENVIRONMENT}" \
+    --name "kairos-${ENVIRONMENT}-$(date -u +%Y%m%d%H%M%S)" \
+    --template-file infrastructure/bicep/main.bicep \
+    --parameters infrastructure/bicep/environments/${ENVIRONMENT}.bicepparam
   exit 0
 fi
 
@@ -31,6 +43,13 @@ if find infrastructure -name '*.bicep' -print -quit | grep -q .; then
   while IFS= read -r file; do
     az bicep build --file "$file"
   done < <(find infrastructure -name '*.bicep' | sort)
+  while IFS= read -r file; do
+    az bicep build-params --file "$file"
+  done < <(find infrastructure -name '*.bicepparam' | sort)
 else
   echo "No Kairos Bicep files found; validation is limited to guard tests."
+fi
+
+if [ "$MODE" = "--lint-only" ]; then
+  echo "Kairos Azure lint validation completed."
 fi

@@ -40,7 +40,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CODEX_REVIEW_MODEL: gpt-5.4
+          CODEX_REVIEW_MODEL: gpt-5.5
           CODEX_REVIEW_DIFF_MAX: 120000
           CODEX_REVIEW_MAX_OUTPUT_TOKENS: 6000
           CODEX_REVIEW_REASONING_EFFORT: low
