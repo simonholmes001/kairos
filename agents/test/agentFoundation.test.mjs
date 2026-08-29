@@ -134,6 +134,13 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
   assert.equal(invalidValuation.signal, "no_trade");
   assert.deepEqual(invalidValuation.missingData, []);
 
+  const mixedInputs = await fundamental.run({
+    instrumentId: "ins_a",
+    fundamentals: { revenueGrowth: 0.3, valuation: "unknown" }
+  });
+  assert.equal(mixedInputs.thesis, "Fundamental data is incomplete; no trade conclusion is permitted.");
+  assert.equal(mixedInputs.missingData.includes("valuation"), false);
+
   const numericValuation = await fundamental.run({
     instrumentId: "ins_a",
     fundamentals: { earningsGrowth: 0.2, revenueGrowth: 0.3, debtToEquity: 1.2, valuation: 0.5 }
