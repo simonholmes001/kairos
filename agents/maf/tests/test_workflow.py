@@ -8,7 +8,7 @@ class WorkflowContractTests(unittest.TestCase):
         result = parse_structured_analysis(
             '{"analysisId":"a","agent":"technical","analysisType":"technical","instrumentId":"ins_a",'
             '"signal":"bullish","horizon":"short_term","thesis":"trend",'
-            '"confidence":0.8,"evidenceIds":["e1"],"generatedAt":"2026-01-01T00:00:00Z"}'
+            '"confidence":0.8,"risks":[],"missingData":[],"evidenceIds":["e1"],"generatedAt":"2026-01-01T00:00:00Z"}'
         )
         self.assertEqual(result["confidence"], 0.8)
 
@@ -16,7 +16,7 @@ class WorkflowContractTests(unittest.TestCase):
             parse_structured_analysis(
                 '{"analysisId":"a","agent":"technical","analysisType":"technical","instrumentId":"ins_a",'
                 '"signal":"bullish","horizon":"short_term","thesis":"trend",'
-                '"confidence":0.8,"generatedAt":"2026-01-01T00:00:00Z"}'
+                '"confidence":0.8,"risks":[],"missingData":[],"generatedAt":"2026-01-01T00:00:00Z"}'
             )
 
 

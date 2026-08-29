@@ -5,7 +5,12 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Iterable
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
+
+
+ANALYSIS_TYPES = {"fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"}
+SIGNALS = {"bullish", "bearish", "neutral", "no_trade"}
+HORIZONS = {"intraday", "short_term", "medium_term", "long_term"}
 
 
 def _required(value: Any, name: str) -> str:
@@ -22,22 +27,36 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
         raise ValueError("agent response must be valid JSON") from error
     if not isinstance(value, dict):
         raise ValueError("agent response must be a JSON object")
-    for field in ("analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis"):
+    fields = {"analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis", "confidence", "risks", "missingData", "evidenceIds", "generatedAt"}
+    unexpected = set(value) - fields
+    if unexpected:
+        raise ValueError(f"unexpected fields: {', '.join(sorted(unexpected))}")
+    for field in ("analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis", "generatedAt"):
         _required(value.get(field), field)
-    if value["signal"] not in {"bullish", "bearish", "neutral", "no_trade"}:
+    if value["signal"] not in SIGNALS:
         raise ValueError("unsupported signal")
-    if value["horizon"] not in {"intraday", "short_term", "medium_term", "long_term"}:
+    if value["horizon"] not in HORIZONS:
         raise ValueError("unsupported horizon")
-    if value["analysisType"] not in {"fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"}:
+    if value["analysisType"] not in ANALYSIS_TYPES:
         raise ValueError("unsupported analysisType")
     confidence = value.get("confidence")
     if not isinstance(confidence, (int, float)) or isinstance(confidence, bool) or not 0 <= confidence <= 1:
         raise ValueError("confidence must be between 0 and 1")
-    evidence_ids = value.get("evidenceIds", [])
-    if not isinstance(evidence_ids, list) or any(not isinstance(item, str) or not item for item in evidence_ids):
-        raise ValueError("evidenceIds must be a list of non-empty strings")
+    arrays = {}
+    for field in ("risks", "missingData", "evidenceIds"):
+        items = value.get(field)
+        if not isinstance(items, list) or any(not isinstance(item, str) or not item.strip() for item in items):
+            raise ValueError(f"{field} must be a list of non-empty strings")
+        arrays[field] = items
+    evidence_ids = arrays["evidenceIds"]
     if value["signal"] != "no_trade" and not evidence_ids:
         raise ValueError("non-no-trade analysis requires evidenceIds")
+    generated_at = value["generatedAt"]
+    try:
+        from datetime import datetime
+        datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+    except (AttributeError, TypeError, ValueError) as error:
+        raise ValueError("generatedAt must be a valid date-time") from error
     return {
         "analysisId": value["analysisId"],
         "agent": value["agent"],
@@ -47,10 +66,10 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
         "horizon": value["horizon"],
         "thesis": value["thesis"],
         "confidence": confidence,
-        "risks": value.get("risks", []),
-        "missingData": value.get("missingData", []),
+        "risks": arrays["risks"],
+        "missingData": arrays["missingData"],
         "evidenceIds": evidence_ids,
-        "generatedAt": _required(value.get("generatedAt"), "generatedAt"),
+        "generatedAt": generated_at,
     }
 
 

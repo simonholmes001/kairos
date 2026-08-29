@@ -14,10 +14,12 @@ import { createSentimentResearchAgent } from "../src/sentimentAgent.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
-  const base = { analysisId: "a", agent: "x", analysisType: "technical", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t", confidence: 0.8 };
-  assert.throws(() => validateAgentAnalysis(base), /evidenceIds/);
-  assert.equal(validateAgentAnalysis({ ...base, signal: "no_trade", thesis: "insufficient evidence", confidence: 0.1 }).signal, "no_trade");
+  const base = { analysisId: "a", agent: "x", analysisType: "technical", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t", confidence: 0.8, risks: [], missingData: [], evidenceIds: ["e1"], generatedAt: "2026-01-01T00:00:00Z" };
+  assert.equal(validateAgentAnalysis({ ...base, signal: "no_trade", thesis: "insufficient evidence", evidenceIds: [] }).signal, "no_trade");
   assert.throws(() => validateAgentAnalysis({ ...base, signal: "neutral", confidence: 2 }), /confidence/);
+  assert.throws(() => validateAgentAnalysis({ ...base, analysisType: "unknown" }), /analysisType/);
+  assert.throws(() => validateAgentAnalysis({ ...base, generatedAt: undefined }), /generatedAt/);
+  assert.throws(() => validateAgentAnalysis({ ...base, risks: [""] }), /risks/);
 });
 
 test("tool gateway denies broker writes and arbitrary unregistered tools", async () => {

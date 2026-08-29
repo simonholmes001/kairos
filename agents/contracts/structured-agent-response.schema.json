@@ -14,8 +14,8 @@
     "horizon": { "enum": ["intraday", "short_term", "medium_term", "long_term"] },
     "thesis": { "type": "string", "minLength": 1 },
     "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-    "risks": { "type": "array", "items": { "type": "string" } },
-    "missingData": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "missingData": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "evidenceIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "generatedAt": { "type": "string", "format": "date-time" }
   }

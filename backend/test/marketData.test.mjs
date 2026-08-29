@@ -8,6 +8,8 @@ import { createAlpacaProvider, createCoinGeckoProvider, createMassiveProvider } 
 import { createJsonFileMarketDataStore, createMarketDataStore } from "../src/marketDataStore.mjs";
 import { createIngestionScheduler } from "../src/marketDataScheduler.mjs";
 
+const completeProvenance = { evidenceId: "e1", sourceId: "test", sourceAuthority: "provider", retrievedAt: "2026-01-01T00:00:00Z", quality: "current", qualityFlags: [], entitlement: { provider: "test", tier: "unknown", cacheAllowed: false, redistributionAllowed: false } };
+
 test("instrument identity is stable and provider-independent", () => {
   const first = createInstrument({ assetClass: "equity", venue: "nasdaq", symbol: "aapl", currency: "usd", providerRefs: { alpaca: "AAPL" } });
   const second = createInstrument({ assetClass: "equity", venue: "NASDAQ", symbol: "AAPL", currency: "USD", providerRefs: { massive: "AAPL" } });
@@ -23,10 +25,10 @@ test("market data requires normalized type and provenance", () => {
     provider: "alpaca",
     dataType: "quote",
     value: { bid: 1, ask: 2 },
-    provenance: { evidenceId: "e1" }
+    provenance: completeProvenance
   });
   assert.equal(point.dataType, "quote");
-  assert.throws(() => createMarketDataPoint({ instrumentId: "ins_a", asOf: "bad", provider: "x", dataType: "quote", value: 1, provenance: { evidenceId: "e1" } }), /ISO date/);
+  assert.throws(() => createMarketDataPoint({ instrumentId: "ins_a", asOf: "bad", provider: "x", dataType: "quote", value: 1, provenance: completeProvenance }), /ISO date/);
   assert.throws(() => createMarketDataPoint({ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", provider: "x", dataType: "quote", value: 1 }), /provenance is required/);
 });
 
@@ -97,7 +99,7 @@ test("ingestion retries transient provider failures and scheduler runs all reque
 
 test("JSON market-data store survives reload", async () => {
   const path = "/tmp/kairos-market-data-test.json";
-  const point = createMarketDataPoint({ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", provider: "test", dataType: "price", value: 10, provenance: { evidenceId: "e1" } });
+  const point = createMarketDataPoint({ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", provider: "test", dataType: "price", value: 10, provenance: completeProvenance });
   const first = createJsonFileMarketDataStore({ path });
   await first.put([point]);
   const second = createJsonFileMarketDataStore({ path });

@@ -126,7 +126,8 @@ jobs:
           if compgen -G "backend/*.sln" > /dev/null; then
             dotnet test backend/*.sln --verbosity minimal
           else
-            dotnet test *.sln --verbosity minimal
+            dotnet test ./*.sln --verbosity minimal
+          fi
 
   maf-contract-tests:
     name: MAF Contract Tests
@@ -147,7 +148,6 @@ jobs:
         env:
           PYTHONPATH: agents/maf
         run: python -m unittest discover -s agents/maf/tests -v
-          fi
 
   ios-swift-tests:
     name: iOS Swift Tests

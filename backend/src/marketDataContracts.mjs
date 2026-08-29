@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { requireUsableProvenance } from "./provenance.mjs";
+import { createProvenance, requireUsableProvenance } from "./provenance.mjs";
 
 export const assetClasses = Object.freeze(["equity", "crypto", "cash", "fund", "index", "fx"]);
 export const marketDataTypes = Object.freeze(["price", "ohlcv", "quote", "trade", "order_book", "market_status"]);
@@ -48,7 +48,9 @@ export function createMarketDataPoint(input) {
   if (!marketDataTypes.includes(dataType)) throw new RangeError(`Unsupported market data type: ${dataType}`);
   const value = input.value;
   if (value === undefined || value === null) throw new TypeError("value is required");
-  requireUsableProvenance(input.provenance);
+  if (!input.provenance) throw new TypeError("provenance is required");
+  const provenance = createProvenance(input.provenance);
+  requireUsableProvenance(provenance);
   return Object.freeze({
     instrumentId: requiredString(input.instrumentId, "instrumentId"),
     asOf: isoDate(input.asOf, "asOf"),
@@ -56,7 +58,7 @@ export function createMarketDataPoint(input) {
     provider: requiredString(input.provider, "provider"),
     dataType,
     value,
-    provenance: input.provenance
+    provenance
   });
 }
 

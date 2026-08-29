@@ -13,7 +13,11 @@ export function createSpecialistAgent({ name, analysisType, signal = "neutral", 
         instrumentId: context.instrumentId,
         signal: result.signal ?? signal,
         horizon: result.horizon ?? horizon,
-        confidence: result.confidence ?? confidence
+        confidence: result.confidence ?? confidence,
+        risks: result.risks ?? [],
+        missingData: result.missingData ?? [],
+        evidenceIds: result.evidenceIds ?? [],
+        generatedAt: result.generatedAt ?? new Date().toISOString()
       });
     }
   });
