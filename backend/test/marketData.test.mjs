@@ -107,6 +107,20 @@ test("Alpaca adapter keeps credentials in headers and normalizes bars", async ()
   assert.equal(request.url.includes("secret"), false);
 });
 
+test("provider telemetry carries correlation without credential-bearing request data", async () => {
+  const events = [];
+  const provider = createAlpacaProvider({
+    apiKey: "key",
+    secretKey: "secret",
+    telemetry: { emit: (event, fields) => events.push({ event, fields }) },
+    fetchImpl: async () => ({ ok: true, async json() { return { bars: [] }; } })
+  });
+  await provider.fetch({ symbol: "AAPL", instrumentId: "ins_a", correlationId: "c-1" });
+  assert.deepEqual(events.map(({ event }) => event), ["provider.request.started", "provider.request.completed"]);
+  assert.equal(events[0].fields.correlationId, "c-1");
+  assert.equal(JSON.stringify(events).includes("secret"), false);
+});
+
 test("CoinGecko adapter uses the API header and normalizes prices", async () => {
   let request;
   const provider = createCoinGeckoProvider({ apiKey: "demo", fetchImpl: async (url, options) => {
