@@ -4,6 +4,18 @@ This path will hold agent workflow definitions, tool contracts, prompt assets, a
 
 Agents must use KAIROS-controlled tools only. They must not call arbitrary provider APIs, broker APIs, URLs, or secret-backed services directly.
 
+The agent foundation provides bounded analysis contracts, a deny-by-default tool gateway, a provider-neutral model router, and a research-only orchestrator. Execution tools are outside the agent surface.
+
+The model router includes an HTTP Responses API adapter that reads only `OPENAI_API_KEY`. The technical specialist uses deterministic quant features and still requires evidence IDs before a non-neutral recommendation can be accepted.
+
+`createQuantHandlers()` exposes those calculations only as the allowlisted `quant.compute` tool; unsupported operations fail closed.
+
+The research orchestrator executes the complete specialist set with bounded concurrency and accepts an injectable run-state store. The included store is an in-memory development implementation; durable checkpoint persistence remains an infrastructure integration.
+
+Deterministic technical, fundamental, macro, sentiment, and risk specialists are available. They emit `no_trade` when required evidence is missing, source coverage is insufficient, or a configured risk limit is breached.
+
+The canonical response shape is versioned at `contracts/structured-agent-response.schema.json` and is validated at both the Node and native MAF boundaries.
+
 ## Validation
 
 ```bash

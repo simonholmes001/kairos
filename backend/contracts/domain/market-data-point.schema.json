@@ -4,13 +4,14 @@
   "title": "MarketDataPoint",
   "type": "object",
   "additionalProperties": false,
-  "required": ["instrumentId", "asOf", "provider", "dataType", "value", "provenance"],
+  "required": ["instrumentId", "asOf", "ingestedAt", "provider", "dataType", "value", "provenance"],
   "properties": {
     "instrumentId": { "type": "string", "minLength": 1 },
     "asOf": { "type": "string", "format": "date-time" },
+    "ingestedAt": { "type": "string", "format": "date-time" },
     "provider": { "type": "string", "minLength": 1 },
     "dataType": {
-      "enum": ["price", "ohlcv", "quote", "fundamental", "macro", "sentiment", "filing"]
+      "enum": ["price", "ohlcv", "quote", "trade", "order_book", "market_status", "fundamental", "macro", "sentiment", "filing"]
     },
     "value": { "type": ["number", "object", "string", "boolean"] },
     "provenance": { "$ref": "./provenance.schema.json" }

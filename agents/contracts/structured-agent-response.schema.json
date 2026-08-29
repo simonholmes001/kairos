@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kairos.local/contracts/agents/structured-agent-response.schema.json",
+  "title": "KAIROS Structured Agent Response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis", "confidence", "risks", "missingData", "evidenceIds", "generatedAt"],
+  "properties": {
+    "analysisId": { "type": "string", "minLength": 1 },
+    "agent": { "type": "string", "minLength": 1 },
+    "analysisType": { "enum": ["fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"] },
+    "instrumentId": { "type": "string", "minLength": 1 },
+    "signal": { "enum": ["bullish", "bearish", "neutral", "no_trade"] },
+    "horizon": { "enum": ["intraday", "short_term", "medium_term", "long_term"] },
+    "thesis": { "type": "string", "minLength": 1 },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "risks": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "missingData": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "evidenceIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "generatedAt": { "type": "string", "format": "date-time" }
+  }
+}

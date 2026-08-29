@@ -14,7 +14,7 @@ The machine-readable provider manifest is `docs/setup/provider-prerequisites.jso
 | FRED | API key for macroeconomic series | free | Azure Key Vault for deployed services; local ignored config for development | #37 |
 | SEC EDGAR | Contact/user-agent policy and request-rate rules | no paid subscription expected | config only; no secret expected | #17, #37 |
 | Alpaca | Paper Trading account and API credentials | paper/free where available | Azure Key Vault; local ignored config for adapter tests | #30, #43 |
-| Massive | Equities market-data account | free/basic first | Azure Key Vault; local ignored config for development | #15, #16 |
+| Massive | Equities market-data account and API key | free/basic first | Azure Key Vault; local ignored config for development | #15, #16 |
 | CoinGecko | Demo API key | demo/free first | Azure Key Vault; local ignored config for development | #15, #16 |
 | Apple Developer | Team, bundle identifier, signing, and TestFlight readiness | only when iOS release starts | GitHub environment secrets and local ignored Xcode config | #49 |
 

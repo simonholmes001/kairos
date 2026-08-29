@@ -55,7 +55,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        dir: [".", "backend", "agents", "quant"]
+        dir: [".", "backend", "agents", "quant", "runtime"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -126,8 +126,30 @@ jobs:
           if compgen -G "backend/*.sln" > /dev/null; then
             dotnet test backend/*.sln --verbosity minimal
           else
-            dotnet test *.sln --verbosity minimal
+            dotnet test ./*.sln --verbosity minimal
           fi
+
+  maf-contract-tests:
+    name: MAF Contract Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Setup Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Compile MAF adapter
+        run: python -m py_compile agents/maf/kairos_maf/workflow.py agents/maf/tests/test_workflow.py
+
+      - name: Run MAF contract tests
+        env:
+          PYTHONPATH: agents/maf
+        run: python -m unittest discover -s agents/maf/tests -v
 
   ios-swift-tests:
     name: iOS Swift Tests
