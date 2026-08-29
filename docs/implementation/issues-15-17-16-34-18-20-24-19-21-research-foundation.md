@@ -14,8 +14,8 @@ This slice implements the reusable boundaries for issues #15, #17, #16, #34, #18
 - Provider-neutral model router with assignment, latency, cost metadata, and controlled failure results.
 - Research-only concurrent specialist orchestration with per-agent failure capture and no execution method.
 
-## Deliberate follow-up
+## Runtime status
 
-The repository is currently Node-based. Microsoft Agent Framework is officially provided for Python and .NET, so this slice defines and tests the KAIROS orchestration contract without claiming a native Agent Framework runtime. A later issue should add the selected Python or .NET runtime adapter, backed by the official framework workflow/executor APIs, checkpoint persistence, and OpenTelemetry exporter configuration.
+The repository remains Node-based for domain and provider boundaries, with a native Python Microsoft Agent Framework adapter under `agents/maf`. It uses the documented concurrent workflow builder, optional file checkpoint storage, and the repository-standard `OPENAI_API_KEY`.
 
-Production persistence, scheduled provider jobs, Azure Monitor exporters, live provider entitlements, and real model/provider SDK clients remain deployment/integration work. No broker or execution capability is introduced by this slice.
+The implementation remains research-only. No broker or execution capability is introduced. Production deployment still requires wiring the scheduler to the selected private Azure job runtime, replacing local JSON/file stores with private managed storage, configuring Azure Monitor/OpenTelemetry exporters, and validating provider entitlements and quotas in the dev environment.
