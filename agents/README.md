@@ -10,6 +10,8 @@ The model router includes an HTTP Responses API adapter that reads only `OPENAI_
 
 `createQuantHandlers()` exposes those calculations only as the allowlisted `quant.compute` tool; unsupported operations fail closed.
 
+The research orchestrator executes the complete specialist set with bounded concurrency and accepts an injectable run-state store. The included store is an in-memory development implementation; durable checkpoint persistence remains an infrastructure integration.
+
 ## Validation
 
 ```bash

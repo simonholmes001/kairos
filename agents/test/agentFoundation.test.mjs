@@ -6,6 +6,7 @@ import { createResearchOrchestrator } from "../src/orchestrator.mjs";
 import { createSpecialistAgent } from "../src/specialistAgents.mjs";
 import { createTechnicalResearchAgent } from "../src/technicalAgent.mjs";
 import { createQuantHandlers } from "../src/quantTools.mjs";
+import { createResearchRunStore } from "../src/runStore.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
@@ -50,6 +51,27 @@ test("research orchestrator isolates agent failure and does not expose execution
   assert.equal(result.analyses.length, 1);
   assert.equal(result.failures[0].error.code, "AGENT_FAILED");
   assert.equal("placeOrder" in result, false);
+});
+
+test("research orchestrator runs every agent with bounded concurrency and persists state", async () => {
+  let active = 0;
+  let peak = 0;
+  const runStore = createResearchRunStore();
+  const agents = Array.from({ length: 5 }, (_, index) => createSpecialistAgent({
+    name: `agent-${index}`,
+    analysisType: "technical",
+    run: async () => {
+      active += 1;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      active -= 1;
+      return { analysisId: `a-${index}`, thesis: "test", evidenceIds: [`e-${index}`], confidence: 0.5 };
+    }
+  }));
+  const result = await createResearchOrchestrator({ agents, maxConcurrency: 2, runStore }).run({ instrumentId: "i", correlationId: "run-1" });
+  assert.equal(result.analyses.length, 5);
+  assert.equal(peak <= 2, true);
+  assert.equal((await runStore.get("run-1")).status, "completed");
 });
 
 test("technical specialist emits a validated, evidence-backed result", async () => {
