@@ -79,6 +79,28 @@ export function createCoinGeckoProvider({ apiKey, fetchImpl, baseUrl = "https://
   });
 }
 
+export function createMassiveProvider({ apiKey, fetchImpl, baseUrl = "https://api.massive.com", telemetry }) {
+  required(apiKey, "Massive API key");
+  return createJsonHttpProvider({
+    name: "massive",
+    baseUrl,
+    fetchImpl,
+    headers: { authorization: `Bearer ${apiKey}` },
+    telemetry,
+    buildRequest: ({ symbol, from, to, multiplier = 1, timespan = "day", limit = 5000 }) => ({
+      path: `/v2/aggs/ticker/${encodeURIComponent(required(symbol, "symbol"))}/range/${multiplier}/${timespan}/${required(from, "from")}/${required(to, "to")}`,
+      searchParams: { adjusted: "true", sort: "asc", limit }
+    }),
+    normalize: (payload, request) => (payload.results ?? []).map((bar) => ({
+      instrumentId: request.instrumentId,
+      asOf: new Date(bar.t).toISOString(),
+      dataType: "ohlcv",
+      value: { open: bar.o, high: bar.h, low: bar.l, close: bar.c, volume: bar.v, vwap: bar.vw },
+      provenance: { sourceId: "massive", sourceAuthority: "provider", sourceTime: new Date(bar.t).toISOString() }
+    }))
+  });
+}
+
 function currencyCode(currency = "usd") {
   return currency.toUpperCase().slice(0, 3);
 }

@@ -4,7 +4,7 @@ import { createIngestionPipeline } from "../src/marketDataIngestion.mjs";
 import { createInstrument, createMarketDataPoint, stableInstrumentId } from "../src/marketDataContracts.mjs";
 import { assessFreshness, createProvenance, requireUsableProvenance } from "../src/provenance.mjs";
 import { createTelemetry } from "../src/observability.mjs";
-import { createAlpacaProvider, createCoinGeckoProvider } from "../src/providerAdapters.mjs";
+import { createAlpacaProvider, createCoinGeckoProvider, createMassiveProvider } from "../src/providerAdapters.mjs";
 import { createJsonFileMarketDataStore, createMarketDataStore } from "../src/marketDataStore.mjs";
 import { createIngestionScheduler } from "../src/marketDataScheduler.mjs";
 
@@ -142,6 +142,18 @@ test("CoinGecko adapter uses the API header and normalizes prices", async () => 
   assert.equal(records[0].instrumentId.startsWith("ins_"), true);
   assert.equal(request.options.headers["x-cg-demo-api-key"], "demo");
   assert.match(request.url, /ids=bitcoin/);
+});
+
+test("Massive adapter uses bearer authentication and normalizes aggregate bars", async () => {
+  let request;
+  const provider = createMassiveProvider({ apiKey: "massive-key", fetchImpl: async (url, options) => {
+    request = { url: String(url), options };
+    return { ok: true, async json() { return { results: [{ t: 1767225600000, o: 1, h: 2, l: 0.5, c: 1.5, v: 10 }] }; } };
+  } });
+  const records = await provider.fetch({ symbol: "AAPL", instrumentId: "ins_a", from: "2026-01-01", to: "2026-01-02" });
+  assert.equal(records[0].dataType, "ohlcv");
+  assert.equal(request.options.headers.authorization, "Bearer massive-key");
+  assert.equal(request.url.includes("massive-key"), false);
 });
 
 test("telemetry redacts credentials while retaining correlation", () => {
