@@ -12,9 +12,8 @@ export function createFundamentalResearchAgent({ name = "fundamental-research" }
       if (!Number.isFinite(revenueGrowth)) missingData.push("revenueGrowth");
       if (!Number.isFinite(debtToEquity)) missingData.push("debtToEquity");
       const normalizedValuation = typeof valuation === "string" ? valuation.trim() : undefined;
-      const valuationProvided = normalizedValuation !== undefined;
-      const valuationMissing = valuation === undefined || valuation === null;
-      const valuationValid = valuationProvided && supportedValuations.has(normalizedValuation);
+      const valuationMissing = valuation === undefined || valuation === null || typeof valuation !== "string";
+      const valuationValid = normalizedValuation !== undefined && supportedValuations.has(normalizedValuation);
       if (valuationMissing) missingData.push("valuation");
       const complete = missingData.length === 0 && valuationValid;
       const signal = !complete ? "no_trade" : earningsGrowth > 0 && revenueGrowth > 0 && debtToEquity < 2 && normalizedValuation !== "expensive" ? "bullish" : "neutral";
