@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from collections.abc import Iterable
 from typing import Any, Optional
 
@@ -11,6 +12,7 @@ from typing import Any, Optional
 ANALYSIS_TYPES = {"fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"}
 SIGNALS = {"bullish", "bearish", "neutral", "no_trade"}
 HORIZONS = {"intraday", "short_term", "medium_term", "long_term"}
+DATE_TIME_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$")
 
 
 def _required(value: Any, name: str) -> str:
@@ -52,6 +54,8 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
     if value["signal"] != "no_trade" and not evidence_ids:
         raise ValueError("non-no-trade analysis requires evidenceIds")
     generated_at = value["generatedAt"]
+    if not DATE_TIME_PATTERN.fullmatch(generated_at):
+        raise ValueError("generatedAt must be an RFC 3339 date-time")
     try:
         from datetime import datetime
         datetime.fromisoformat(generated_at.replace("Z", "+00:00"))

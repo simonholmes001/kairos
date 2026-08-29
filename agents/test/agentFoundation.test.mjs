@@ -19,6 +19,7 @@ test("agent analyses require bounded signals and evidence", () => {
   assert.throws(() => validateAgentAnalysis({ ...base, signal: "neutral", confidence: 2 }), /confidence/);
   assert.throws(() => validateAgentAnalysis({ ...base, analysisType: "unknown" }), /analysisType/);
   assert.throws(() => validateAgentAnalysis({ ...base, generatedAt: undefined }), /generatedAt/);
+  assert.throws(() => validateAgentAnalysis({ ...base, generatedAt: "2026-01-01" }), /date-time/);
   assert.throws(() => validateAgentAnalysis({ ...base, risks: [""] }), /risks/);
 });
 
@@ -87,6 +88,15 @@ test("technical specialist emits a validated, evidence-backed result", async () 
   assert.equal(result.analysisType, "technical");
   assert.equal(result.signal, "bullish");
   assert.equal(result.confidence >= 0 && result.confidence <= 1, true);
+});
+
+test("technical and risk specialists fail closed when price history is unavailable", async () => {
+  const technical = await createTechnicalResearchAgent({ shortPeriod: 2, longPeriod: 3 }).run({ instrumentId: "ins_a" });
+  const risk = await createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3 }).run({ instrumentId: "ins_a", closes: [100, 101] });
+  assert.equal(technical.signal, "no_trade");
+  assert.equal(risk.signal, "no_trade");
+  assert.equal(technical.evidenceIds.length, 0);
+  assert.equal(risk.missingData.includes("price history"), true);
 });
 
 test("fundamental and risk specialists fail closed when evidence is insufficient or limits are breached", async () => {

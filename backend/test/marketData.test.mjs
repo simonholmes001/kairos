@@ -36,6 +36,21 @@ test("provenance marks delayed observations stale and rejects missing evidence",
   const provenance = createProvenance({ sourceId: "fred", sourceAuthority: "primary", sourceTime: "2026-01-01T00:00:00Z", retrievedAt: "2026-01-01T00:01:00Z" });
   assert.equal(assessFreshness({ sourceTime: provenance.sourceTime, retrievedAt: provenance.retrievedAt, now: "2026-01-02T00:00:00Z", maxAgeMs: 60_000 }), "stale");
   assert.throws(() => requireUsableProvenance({ evidenceId: "e2", quality: "missing" }), /missing data/);
+  assert.throws(() => assessFreshness({ retrievedAt: "2026-01-02T00:00:00Z", now: "2026-01-01T00:00:00Z", maxAgeMs: 60_000 }), /future/);
+});
+
+test("ingestion rejects future observations and classifies invalid records as non-retryable", async () => {
+  const future = await createIngestionPipeline({
+    provider: { name: "future", async fetch() { return [{ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", dataType: "price", value: 10, provenance: { sourceTime: "2026-01-02T00:00:00Z" } }]; } },
+    clock: () => new Date("2026-01-01T00:00:00Z")
+  }).ingest({});
+  assert.deepEqual(future.error, { code: "PROVENANCE_UNUSABLE", message: "observation timestamp cannot be in the future", retryable: false });
+
+  const invalid = await createIngestionPipeline({
+    provider: { name: "invalid", async fetch() { return [{ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", dataType: "unsupported", value: 10, provenance: { sourceId: "invalid", sourceAuthority: "provider" } }]; } }
+  }).ingest({});
+  assert.equal(invalid.error.code, "PROVIDER_CONTRACT_INVALID");
+  assert.equal(invalid.error.retryable, false);
 });
 
 test("ingestion persists stale quality when observations exceed the configured age", async () => {
@@ -67,7 +82,7 @@ test("ingestion normalizes records and isolates provider failures", async () => 
   assert.equal(store.size(), 1);
 
   const failed = createIngestionPipeline({ provider: { name: "broken", async fetch() { throw new Error("timeout"); } } });
-  assert.deepEqual((await failed.ingest({})).error, { code: "INGESTION_FAILED", message: "timeout", retryable: true });
+  assert.deepEqual((await failed.ingest({})).error, { code: "PROVIDER_UNAVAILABLE", message: "timeout", retryable: true });
 });
 
 test("ingestion retries transient provider failures and scheduler runs all requests", async () => {
@@ -105,6 +120,15 @@ test("JSON market-data store survives reload", async () => {
   const second = createJsonFileMarketDataStore({ path });
   assert.equal(await second.size(), 1);
   assert.equal((await second.query({ instrumentId: "ins_a" }))[0].value, 10);
+});
+
+test("JSON market-data store serializes concurrent writes", async () => {
+  const path = "/tmp/kairos-market-data-concurrent-test.json";
+  const store = createJsonFileMarketDataStore({ path });
+  const points = [1, 2].map((value) => createMarketDataPoint({ instrumentId: `ins_${value}`, asOf: "2026-01-01T00:00:00Z", provider: "test", dataType: "price", value, provenance: { ...completeProvenance, evidenceId: `e${value}` } }));
+  await Promise.all(points.map((point) => store.put([point])));
+  assert.equal(await store.size(), 2);
+  assert.equal(JSON.parse(await (await import("node:fs/promises")).readFile(path, "utf8")).length, 2);
 });
 
 test("Alpaca adapter keeps credentials in headers and normalizes bars", async () => {

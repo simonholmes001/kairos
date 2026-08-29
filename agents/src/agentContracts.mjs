@@ -2,6 +2,7 @@ const signals = new Set(["bullish", "bearish", "neutral", "no_trade"]);
 const horizons = new Set(["intraday", "short_term", "medium_term", "long_term"]);
 const analysisTypes = new Set(["fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"]);
 const fields = new Set(["analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis", "confidence", "risks", "missingData", "evidenceIds", "generatedAt"]);
+const dateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 function required(value, name) {
   if (typeof value !== "string" || value.trim() === "") throw new TypeError(`${name} is required`);
@@ -15,6 +16,7 @@ export function validateAgentAnalysis(input) {
     throw new RangeError("confidence must be a number between 0 and 1");
   }
   const generatedAt = required(input.generatedAt, "generatedAt");
+  if (!dateTimePattern.test(generatedAt)) throw new TypeError("generatedAt must be an RFC 3339 date-time");
   const date = new Date(generatedAt);
   if (Number.isNaN(date.valueOf())) throw new TypeError("generatedAt must be a valid date-time");
   const arrays = {};

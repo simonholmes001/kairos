@@ -34,8 +34,16 @@ export function assessFreshness({ sourceTime, retrievedAt, now = new Date(), max
   const observed = new Date(sourceTime ?? retrievedAt);
   const current = new Date(now);
   if (Number.isNaN(observed.valueOf()) || Number.isNaN(current.valueOf())) throw new TypeError("timestamps must be valid dates");
+  if (observed.getTime() > current.getTime()) throw new RangeError("observation timestamp cannot be in the future");
   if (!Number.isFinite(maxAgeMs) || maxAgeMs < 0) throw new TypeError("maxAgeMs must be non-negative");
   return current.getTime() - observed.getTime() > maxAgeMs ? "stale" : "current";
+}
+
+export function assertNotFuture({ sourceTime, retrievedAt, now = new Date() }) {
+  const observed = new Date(sourceTime ?? retrievedAt);
+  const current = new Date(now);
+  if (Number.isNaN(observed.valueOf()) || Number.isNaN(current.valueOf())) throw new TypeError("timestamps must be valid dates");
+  if (observed.getTime() > current.getTime()) throw new RangeError("observation timestamp cannot be in the future");
 }
 
 export function requireUsableProvenance(provenance) {

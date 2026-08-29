@@ -6,6 +6,18 @@ export function createRiskResearchAgent({ name = "risk-research", shortPeriod = 
     name,
     analysisType: "risk",
     run: async ({ instrumentId, closes }) => {
+      if (!Array.isArray(closes) || closes.length < longPeriod || closes.some((close) => !Number.isFinite(close))) {
+        return {
+          analysisId: `${name}:${instrumentId}:insufficient-price-data`,
+          signal: "no_trade",
+          horizon: "medium_term",
+          confidence: 0,
+          thesis: "Risk analysis is unavailable because the required price history is missing or incomplete.",
+          risks: [],
+          missingData: ["price history", `at least ${longPeriod} closes`],
+          evidenceIds: []
+        };
+      }
       const features = analyzePrices({ closes, shortPeriod, longPeriod, periodsPerYear });
       const breached = features.maximumDrawdown > maxDrawdownLimit;
       return {

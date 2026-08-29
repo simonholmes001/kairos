@@ -12,6 +12,13 @@ class WorkflowContractTests(unittest.TestCase):
         )
         self.assertEqual(result["confidence"], 0.8)
 
+        with self.assertRaisesRegex(ValueError, "date-time"):
+            parse_structured_analysis(
+                '{"analysisId":"a","agent":"technical","analysisType":"technical","instrumentId":"ins_a",'
+                '"signal":"bullish","horizon":"short_term","thesis":"trend",'
+                '"confidence":0.8,"risks":[],"missingData":[],"evidenceIds":["e1"],"generatedAt":"2026-01-01"}'
+            )
+
         with self.assertRaisesRegex(ValueError, "evidenceIds"):
             parse_structured_analysis(
                 '{"analysisId":"a","agent":"technical","analysisType":"technical","instrumentId":"ins_a",'

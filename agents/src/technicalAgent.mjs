@@ -6,6 +6,18 @@ export function createTechnicalResearchAgent({ name = "technical-research", shor
     name,
     analysisType: "technical",
     run: async ({ instrumentId, closes }) => {
+      if (!Array.isArray(closes) || closes.length < longPeriod || closes.some((close) => !Number.isFinite(close))) {
+        return {
+          analysisId: `${name}:${instrumentId}:insufficient-price-data`,
+          signal: "no_trade",
+          horizon: "short_term",
+          confidence: 0,
+          thesis: "Technical analysis is unavailable because the required price history is missing or incomplete.",
+          risks: [],
+          missingData: ["price history", `at least ${longPeriod} closes`],
+          evidenceIds: []
+        };
+      }
       const features = analyzePrices({ closes, shortPeriod, longPeriod, periodsPerYear });
       const signal = features.latest > features.shortSma && features.shortSma > features.longSma
         ? "bullish"

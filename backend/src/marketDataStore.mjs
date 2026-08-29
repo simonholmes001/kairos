@@ -35,16 +35,23 @@ export function createJsonFileMarketDataStore({ path, fsImpl } = {}) {
     }
   });
   async function persist(module) {
-    await module.writeFile(path, `${JSON.stringify([...records.values()], null, 2)}\n`, "utf8");
+    const temporaryPath = `${path}.${process.pid}.${Date.now()}.tmp`;
+    await module.writeFile(temporaryPath, `${JSON.stringify([...records.values()], null, 2)}\n`, "utf8");
+    await module.rename(temporaryPath, path);
   }
+  let writeQueue = Promise.resolve();
   return Object.freeze({
     ready,
     async put(points) {
       const module = await fs;
       await ready;
-      for (const point of points) records.set(keyFor(point), point);
-      await persist(module);
-      return points.length;
+      const operation = writeQueue.then(async () => {
+        for (const point of points) records.set(keyFor(point), point);
+        await persist(module);
+        return points.length;
+      });
+      writeQueue = operation.catch(() => {});
+      return operation;
     },
     async query(filters = {}) {
       await ready;
