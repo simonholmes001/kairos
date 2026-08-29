@@ -14,6 +14,7 @@ export function validateAgentAnalysis(input) {
   const output = {
     analysisId: required(input.analysisId, "analysisId"),
     agent: required(input.agent, "agent"),
+    analysisType: required(input.analysisType, "analysisType"),
     instrumentId: required(input.instrumentId, "instrumentId"),
     signal: required(input.signal, "signal"),
     horizon: required(input.horizon, "horizon"),

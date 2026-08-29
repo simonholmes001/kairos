@@ -14,6 +14,8 @@ The research orchestrator executes the complete specialist set with bounded conc
 
 Deterministic technical, fundamental, macro, sentiment, and risk specialists are available. They emit `no_trade` when required evidence is missing, source coverage is insufficient, or a configured risk limit is breached.
 
+The canonical response shape is versioned at `contracts/structured-agent-response.schema.json` and is validated at both the Node and native MAF boundaries.
+
 ## Validation
 
 ```bash

@@ -22,12 +22,14 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
         raise ValueError("agent response must be valid JSON") from error
     if not isinstance(value, dict):
         raise ValueError("agent response must be a JSON object")
-    for field in ("analysisId", "agent", "instrumentId", "signal", "horizon", "thesis"):
+    for field in ("analysisId", "agent", "analysisType", "instrumentId", "signal", "horizon", "thesis"):
         _required(value.get(field), field)
     if value["signal"] not in {"bullish", "bearish", "neutral", "no_trade"}:
         raise ValueError("unsupported signal")
     if value["horizon"] not in {"intraday", "short_term", "medium_term", "long_term"}:
         raise ValueError("unsupported horizon")
+    if value["analysisType"] not in {"fundamental", "technical", "macro", "sentiment", "risk", "portfolio", "scenario"}:
+        raise ValueError("unsupported analysisType")
     confidence = value.get("confidence")
     if not isinstance(confidence, (int, float)) or isinstance(confidence, bool) or not 0 <= confidence <= 1:
         raise ValueError("confidence must be between 0 and 1")
@@ -39,6 +41,7 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
     return {
         "analysisId": value["analysisId"],
         "agent": value["agent"],
+        "analysisType": value["analysisType"],
         "instrumentId": value["instrumentId"],
         "signal": value["signal"],
         "horizon": value["horizon"],
@@ -47,6 +50,7 @@ def parse_structured_analysis(text: str) -> dict[str, Any]:
         "risks": value.get("risks", []),
         "missingData": value.get("missingData", []),
         "evidenceIds": evidence_ids,
+        "generatedAt": _required(value.get("generatedAt"), "generatedAt"),
     }
 
 

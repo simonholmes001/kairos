@@ -14,9 +14,10 @@ import { createSentimentResearchAgent } from "../src/sentimentAgent.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
-  assert.throws(() => validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t", confidence: 0.8 }), /evidenceIds/);
-  assert.equal(validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "no_trade", horizon: "short_term", thesis: "insufficient evidence", confidence: 0.1 }).signal, "no_trade");
-  assert.throws(() => validateAgentAnalysis({ analysisId: "a", agent: "x", instrumentId: "i", signal: "neutral", horizon: "short_term", thesis: "t", confidence: 2 }), /confidence/);
+  const base = { analysisId: "a", agent: "x", analysisType: "technical", instrumentId: "i", signal: "bullish", horizon: "short_term", thesis: "t", confidence: 0.8 };
+  assert.throws(() => validateAgentAnalysis(base), /evidenceIds/);
+  assert.equal(validateAgentAnalysis({ ...base, signal: "no_trade", thesis: "insufficient evidence", confidence: 0.1 }).signal, "no_trade");
+  assert.throws(() => validateAgentAnalysis({ ...base, signal: "neutral", confidence: 2 }), /confidence/);
 });
 
 test("tool gateway denies broker writes and arbitrary unregistered tools", async () => {
@@ -81,7 +82,7 @@ test("research orchestrator runs every agent with bounded concurrency and persis
 test("technical specialist emits a validated, evidence-backed result", async () => {
   const agent = createTechnicalResearchAgent({ shortPeriod: 2, longPeriod: 3 });
   const result = await agent.run({ instrumentId: "ins_a", closes: [100, 101, 102, 103], correlationId: "c" });
-  assert.equal(result.analysisType, undefined);
+  assert.equal(result.analysisType, "technical");
   assert.equal(result.signal, "bullish");
   assert.equal(result.confidence >= 0 && result.confidence <= 1, true);
 });
