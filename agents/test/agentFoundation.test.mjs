@@ -152,6 +152,14 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
   assert.deepEqual(numericValuation.missingData, []);
   assert.equal(numericValuation.thesis, "Fundamental data contains a valuation of the wrong type; no trade conclusion is permitted.");
 
+  const numericMixedInputs = await fundamental.run({
+    instrumentId: "ins_a",
+    fundamentals: { revenueGrowth: 0.3, valuation: 0.5 }
+  });
+  assert.equal(numericMixedInputs.thesis, "Fundamental data contains a valuation of the wrong type; no trade conclusion is permitted.");
+  assert.equal(numericMixedInputs.missingData.includes("earningsGrowth"), true);
+  assert.equal(numericMixedInputs.missingData.includes("debtToEquity"), true);
+
   const risk = createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3, maxDrawdownLimit: 0.1 });
   const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
   assert.equal(result.signal, "no_trade");
