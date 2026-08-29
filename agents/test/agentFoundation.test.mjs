@@ -106,6 +106,27 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
   assert.equal(incomplete.missingData.includes("debtToEquity"), true);
   assert.deepEqual(incomplete.evidenceIds, []);
 
+  const bullish = await fundamental.run({
+    instrumentId: "ins_a",
+    fundamentals: { earningsGrowth: 0.2, revenueGrowth: 0.3, debtToEquity: 1.2, valuation: "fair" }
+  });
+  assert.equal(bullish.signal, "bullish");
+  assert.equal(bullish.evidenceIds.length, 1);
+
+  const expensive = await fundamental.run({
+    instrumentId: "ins_a",
+    fundamentals: { earningsGrowth: 0.2, revenueGrowth: 0.3, debtToEquity: 1.2, valuation: "expensive" }
+  });
+  assert.equal(expensive.signal, "neutral");
+  assert.deepEqual(expensive.missingData, []);
+
+  const missingValuation = await fundamental.run({
+    instrumentId: "ins_a",
+    fundamentals: { earningsGrowth: 0.2, revenueGrowth: 0.3, debtToEquity: 1.2 }
+  });
+  assert.equal(missingValuation.signal, "no_trade");
+  assert.equal(missingValuation.missingData.includes("valuation"), true);
+
   const risk = createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3, maxDrawdownLimit: 0.1 });
   const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
   assert.equal(result.signal, "no_trade");
