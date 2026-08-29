@@ -104,6 +104,7 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
   const incomplete = await fundamental.run({ instrumentId: "ins_a", fundamentals: { revenueGrowth: 0.1 } });
   assert.equal(incomplete.signal, "no_trade");
   assert.equal(incomplete.missingData.includes("debtToEquity"), true);
+  assert.deepEqual(incomplete.evidenceIds, []);
 
   const risk = createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3, maxDrawdownLimit: 0.1 });
   const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
@@ -117,6 +118,7 @@ test("macro and sentiment specialists require complete, sufficiently supported i
   assert.equal(macroResult.signal, "bullish");
   const missingMacro = await macro.run({ instrumentId: "ins_a", macro: { inflation: 2 } });
   assert.equal(missingMacro.signal, "no_trade");
+  assert.deepEqual(missingMacro.evidenceIds, []);
 
   const sentiment = createSentimentResearchAgent({ minimumSources: 2 });
   const sentimentResult = await sentiment.run({ instrumentId: "ins_a", sentiment: { score: -0.6, sourceIds: ["news-1", "news-2"] } });

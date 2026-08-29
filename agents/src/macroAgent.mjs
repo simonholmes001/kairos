@@ -18,7 +18,7 @@ export function createMacroResearchAgent({ name = "macro-research" } = {}) {
         thesis: numeric ? "Macro growth, inflation, and labor indicators were evaluated against configured thresholds." : "Macro indicators are incomplete; no trade conclusion is permitted.",
         risks: numeric ? [`Policy rate is ${policyRate}.`] : [],
         missingData: numeric ? [] : ["inflation", "unemployment", "policyRate", "gdpGrowth"],
-        evidenceIds: [`macro:${instrumentId}`]
+        evidenceIds: numeric ? [`macro:${instrumentId}`] : []
       };
     }
   });

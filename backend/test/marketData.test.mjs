@@ -97,19 +97,40 @@ test("ingestion retries transient provider failures and scheduler runs all reque
 
   const completed = [];
   const scheduled = [];
+  let intervalCallback;
   const scheduler = createIngestionScheduler({
     pipeline: { async ingest(request) { scheduled.push(request); return request; } },
     requests: [{ symbol: "AAPL" }, { symbol: "BTC" }],
     intervalMs: 1000,
     logger: (event) => completed.push(event),
-    setIntervalImpl: () => "timer",
+    setIntervalImpl: (callback) => { intervalCallback = callback; return "timer"; },
     clearIntervalImpl: () => {}
   });
-  await scheduler.runOnce();
-  scheduler.start();
-  scheduler.stop();
-  assert.deepEqual(scheduled, [{ symbol: "AAPL" }, { symbol: "BTC" }]);
+  const { runOnce, start, stop } = scheduler;
+  await runOnce();
+  start();
+  await intervalCallback();
+  stop();
+  assert.deepEqual(scheduled, [{ symbol: "AAPL" }, { symbol: "BTC" }, { symbol: "AAPL" }, { symbol: "BTC" }]);
   assert.equal(completed.length >= 1, true);
+});
+
+test("scheduled ingestion logs rejected interval runs", async () => {
+  const events = [];
+  let intervalCallback;
+  const scheduler = createIngestionScheduler({
+    pipeline: { async ingest() { throw new Error("provider unavailable"); } },
+    requests: [{}],
+    intervalMs: 1000,
+    logger: (event) => events.push(event),
+    setIntervalImpl: (callback) => { intervalCallback = callback; return "timer"; },
+    clearIntervalImpl: () => {}
+  });
+  scheduler.start();
+  intervalCallback();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(events[0].event, "market_data.schedule.failed");
+  scheduler.stop();
 });
 
 test("JSON market-data store survives reload", async () => {

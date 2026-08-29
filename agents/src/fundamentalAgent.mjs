@@ -16,7 +16,7 @@ export function createFundamentalResearchAgent({ name = "fundamental-research" }
         thesis: numeric ? "Fundamental factors were evaluated against the configured growth, leverage, and valuation rules." : "Fundamental data is incomplete; no trade conclusion is permitted.",
         risks: numeric ? [`Debt-to-equity is ${debtToEquity}.`] : [],
         missingData: numeric ? [] : ["earningsGrowth", "revenueGrowth", "debtToEquity", "valuation"],
-        evidenceIds: [`fundamentals:${instrumentId}`]
+        evidenceIds: numeric ? [`fundamentals:${instrumentId}`] : []
       };
     }
   });
