@@ -10,7 +10,7 @@ export function classifyTool(toolName) {
     return "financial_write";
   }
 
-  if (toolName.startsWith("market.") || toolName.startsWith("portfolio.") || toolName.startsWith("research.")) {
+  if (toolName.startsWith("market.") || toolName.startsWith("portfolio.") || toolName.startsWith("research.") || toolName === "quant.compute") {
     return "read";
   }
 

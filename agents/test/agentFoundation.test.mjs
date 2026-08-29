@@ -5,6 +5,7 @@ import { createModelRouter, createOpenAiProvider } from "../src/modelRouter.mjs"
 import { createResearchOrchestrator } from "../src/orchestrator.mjs";
 import { createSpecialistAgent } from "../src/specialistAgents.mjs";
 import { createTechnicalResearchAgent } from "../src/technicalAgent.mjs";
+import { createQuantHandlers } from "../src/quantTools.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
@@ -14,10 +15,14 @@ test("agent analyses require bounded signals and evidence", () => {
 });
 
 test("tool gateway denies broker writes and arbitrary unregistered tools", async () => {
-  const gateway = createToolGateway({ handlers: { "market.get_quote": async () => ({ price: 1 }) } });
+  const gateway = createToolGateway({ handlers: { "market.get_quote": async () => ({ price: 1 }), ...createQuantHandlers() } });
   assert.equal((await gateway.invoke({ toolName: "broker.place_order", mode: "research" })).error.code, "TOOL_DENIED");
   assert.equal((await gateway.invoke({ toolName: "provider.raw_http", mode: "research" })).error.code, "TOOL_DENIED");
   assert.deepEqual(await gateway.invoke({ toolName: "market.get_quote", input: { instrumentId: "i" } }), { ok: true, value: { price: 1 } });
+  const quant = await gateway.invoke({ toolName: "quant.compute", input: { operation: "price_analysis", closes: [100, 101, 102], shortPeriod: 2, longPeriod: 3 } });
+  assert.equal(quant.ok, true);
+  assert.equal(quant.value.latest, 102);
+  assert.equal((await gateway.invoke({ toolName: "quant.compute", input: { operation: "unknown", closes: [1, 2, 3], shortPeriod: 1, longPeriod: 2 } })).error.code, "TOOL_FAILED");
 });
 
 test("model router records provider-neutral completion and controlled failure", async () => {
