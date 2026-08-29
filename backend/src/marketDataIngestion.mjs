@@ -1,13 +1,25 @@
 import { createMarketDataPoint } from "./marketDataContracts.mjs";
 import { createProvenance, requireUsableProvenance } from "./provenance.mjs";
 
-export function createIngestionPipeline({ provider, store, clock = () => new Date(), logger = () => {} }) {
+export function createIngestionPipeline({ provider, store, clock = () => new Date(), logger = () => {}, maxAttempts = 3, sleep = async () => {} }) {
   if (!provider || typeof provider.fetch !== "function") throw new TypeError("provider.fetch is required");
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new TypeError("maxAttempts must be a positive integer");
   return Object.freeze({
     async ingest(request) {
       const startedAt = clock();
       try {
-        const records = await provider.fetch(request);
+        let records;
+        let lastError;
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          try {
+            records = await provider.fetch(request);
+            break;
+          } catch (error) {
+            lastError = error;
+            if (attempt < maxAttempts) await sleep(attempt);
+          }
+        }
+        if (lastError && records === undefined) throw lastError;
         if (!Array.isArray(records)) throw new TypeError("provider must return an array");
         const normalized = records.map((record) => {
           const provenance = createProvenance({

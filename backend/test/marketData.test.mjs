@@ -6,6 +6,7 @@ import { assessFreshness, createProvenance, requireUsableProvenance } from "../s
 import { createTelemetry } from "../src/observability.mjs";
 import { createAlpacaProvider, createCoinGeckoProvider } from "../src/providerAdapters.mjs";
 import { createMarketDataStore } from "../src/marketDataStore.mjs";
+import { createIngestionScheduler } from "../src/marketDataScheduler.mjs";
 
 test("instrument identity is stable and provider-independent", () => {
   const first = createInstrument({ assetClass: "equity", venue: "nasdaq", symbol: "aapl", currency: "usd", providerRefs: { alpaca: "AAPL" } });
@@ -55,6 +56,33 @@ test("ingestion normalizes records and isolates provider failures", async () => 
 
   const failed = createIngestionPipeline({ provider: { name: "broken", async fetch() { throw new Error("timeout"); } } });
   assert.deepEqual((await failed.ingest({})).error, { code: "INGESTION_FAILED", message: "timeout", retryable: true });
+});
+
+test("ingestion retries transient provider failures and scheduler runs all requests", async () => {
+  let attempts = 0;
+  const pipeline = createIngestionPipeline({
+    provider: { name: "retrying", async fetch() { attempts += 1; if (attempts < 2) throw new Error("temporary"); return []; } },
+    maxAttempts: 2,
+    sleep: async () => {}
+  });
+  assert.deepEqual(await pipeline.ingest({}), []);
+  assert.equal(attempts, 2);
+
+  const completed = [];
+  const scheduled = [];
+  const scheduler = createIngestionScheduler({
+    pipeline: { async ingest(request) { scheduled.push(request); return request; } },
+    requests: [{ symbol: "AAPL" }, { symbol: "BTC" }],
+    intervalMs: 1000,
+    logger: (event) => completed.push(event),
+    setIntervalImpl: () => "timer",
+    clearIntervalImpl: () => {}
+  });
+  await scheduler.runOnce();
+  scheduler.start();
+  scheduler.stop();
+  assert.deepEqual(scheduled, [{ symbol: "AAPL" }, { symbol: "BTC" }]);
+  assert.equal(completed.length >= 1, true);
 });
 
 test("Alpaca adapter keeps credentials in headers and normalizes bars", async () => {
