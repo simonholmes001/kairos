@@ -18,3 +18,10 @@ test("runtime does not create providers without complete credentials", () => {
   const runtime = createResearchRuntime({ env: { ALPACA_PAPER_API_KEY: "key" } });
   assert.deepEqual(runtime.providers, []);
 });
+
+test("runtime defaults missing research context", async () => {
+  const runtime = createResearchRuntime();
+  const result = await runtime.research({ instrumentId: "ins_a", correlationId: "run-2" });
+  assert.equal(result.ok, true);
+  assert.deepEqual(result.analyses, []);
+});

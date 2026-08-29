@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { createProvenance, requireUsableProvenance } from "./provenance.mjs";
 
 export const assetClasses = Object.freeze(["equity", "crypto", "cash", "fund", "index", "fx"]);
-export const marketDataTypes = Object.freeze(["price", "ohlcv", "quote", "trade", "order_book", "market_status"]);
+export const marketDataTypes = Object.freeze(["price", "ohlcv", "quote", "trade", "order_book", "market_status", "fundamental", "macro", "sentiment", "filing"]);
 
 function requiredString(value, name) {
   if (typeof value !== "string" || value.trim() === "") {

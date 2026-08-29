@@ -28,6 +28,14 @@ test("market data requires normalized type and provenance", () => {
     provenance: completeProvenance
   });
   assert.equal(point.dataType, "quote");
+  assert.equal(createMarketDataPoint({
+    instrumentId: "ins_a",
+    asOf: "2026-01-01T00:00:00Z",
+    provider: "alpaca",
+    dataType: "fundamental",
+    value: { peRatio: 10 },
+    provenance: completeProvenance
+  }).dataType, "fundamental");
   assert.throws(() => createMarketDataPoint({ instrumentId: "ins_a", asOf: "bad", provider: "x", dataType: "quote", value: 1, provenance: completeProvenance }), /ISO date/);
   assert.throws(() => createMarketDataPoint({ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", provider: "x", dataType: "quote", value: 1 }), /provenance is required/);
 });
@@ -35,6 +43,8 @@ test("market data requires normalized type and provenance", () => {
 test("provenance marks delayed observations stale and rejects missing evidence", () => {
   const provenance = createProvenance({ sourceId: "fred", sourceAuthority: "primary", sourceTime: "2026-01-01T00:00:00Z", retrievedAt: "2026-01-01T00:01:00Z" });
   assert.equal(assessFreshness({ sourceTime: provenance.sourceTime, retrievedAt: provenance.retrievedAt, now: "2026-01-02T00:00:00Z", maxAgeMs: 60_000 }), "stale");
+  assert.throws(() => createProvenance({ sourceId: "fred", sourceAuthority: "primary", quality: "invalid" }), /Unsupported quality/);
+  assert.throws(() => createProvenance({ sourceId: "fred", sourceAuthority: "primary", qualityFlags: ["invalid"] }), /Unsupported quality flag/);
   assert.throws(() => requireUsableProvenance({ evidenceId: "e2", quality: "missing" }), /missing data/);
   assert.throws(() => assessFreshness({ retrievedAt: "2026-01-02T00:00:00Z", now: "2026-01-01T00:00:00Z", maxAgeMs: 60_000 }), /future/);
 });

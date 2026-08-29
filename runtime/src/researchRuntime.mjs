@@ -25,8 +25,8 @@ export function createResearchRuntime({ env = process.env, agents = [], fetchImp
     async ingest(requestsByProvider = {}) {
       return Object.fromEntries(await Promise.all(pipelines.map(async ({ provider, pipeline }) => [provider, await pipeline.ingest(requestsByProvider[provider] ?? {})])));
     },
-    async research(input) {
-      return orchestrator.run({ ...input, context: { ...input.context, store } });
+    async research(input = {}) {
+      return orchestrator.run({ ...input, context: { ...(input.context ?? {}), store } });
     },
     store
   });

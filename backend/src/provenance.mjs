@@ -1,5 +1,6 @@
 export const sourceAuthorities = Object.freeze(["primary", "provider", "derived", "operator", "simulation"]);
 export const qualityFlags = Object.freeze(["current", "delayed", "stale", "estimated", "alternative", "unverified", "missing"]);
+const qualityValues = new Set(qualityFlags);
 
 function nonEmpty(value, name) {
   if (typeof value !== "string" || value.trim() === "") throw new TypeError(`${name} must be non-empty`);
@@ -12,6 +13,15 @@ export function createProvenance(input) {
   const retrievedAt = new Date(input.retrievedAt ?? new Date());
   if (Number.isNaN(retrievedAt.valueOf())) throw new TypeError("retrievedAt must be a valid date");
   const entitlement = input.entitlement ?? {};
+  const quality = nonEmpty(input.quality ?? "current", "quality");
+  if (!qualityValues.has(quality)) throw new RangeError(`Unsupported quality: ${quality}`);
+  const inputQualityFlags = input.qualityFlags ?? [];
+  if (!Array.isArray(inputQualityFlags)) throw new TypeError("qualityFlags must be an array");
+  const normalizedQualityFlags = Object.freeze(inputQualityFlags.map((flag) => {
+    const qualityFlag = nonEmpty(flag, "qualityFlags item");
+    if (!qualityValues.has(qualityFlag)) throw new RangeError(`Unsupported quality flag: ${qualityFlag}`);
+    return qualityFlag;
+  }));
   return Object.freeze({
     evidenceId: nonEmpty(input.evidenceId ?? `${nonEmpty(input.sourceId, "sourceId")}:${retrievedAt.toISOString()}`, "evidenceId"),
     sourceId: nonEmpty(input.sourceId, "sourceId"),
@@ -19,8 +29,8 @@ export function createProvenance(input) {
     retrievedAt: retrievedAt.toISOString(),
     sourceTime: input.sourceTime ? new Date(input.sourceTime).toISOString() : undefined,
     sourceUrl: input.sourceUrl,
-    quality: input.quality ?? "current",
-    qualityFlags: Object.freeze([...(input.qualityFlags ?? [])]),
+    quality,
+    qualityFlags: normalizedQualityFlags,
     entitlement: Object.freeze({
       provider: nonEmpty(entitlement.provider ?? input.sourceId, "entitlement.provider"),
       tier: nonEmpty(entitlement.tier ?? "unknown", "entitlement.tier"),
