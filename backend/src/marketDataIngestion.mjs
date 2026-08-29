@@ -32,7 +32,7 @@ export function createIngestionPipeline({ provider, store, clock = () => new Dat
           requireUsableProvenance(provenance);
           return createMarketDataPoint({ ...record, provider: provider.name, ingestedAt: clock(), provenance });
         });
-        if (store) store.put(normalized);
+        if (store) await store.put(normalized);
         logger({ event: "market_data.ingestion.completed", provider: provider.name, count: normalized.length, startedAt: startedAt.toISOString() });
         return normalized;
       } catch (error) {

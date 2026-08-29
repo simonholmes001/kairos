@@ -12,4 +12,4 @@ Azure-hosted backend services are authoritative for trading state, risk state, b
 
 The executable market-data foundation provides provider-independent instrument identities, provenance and freshness enforcement, normalized ingestion, and redacted correlation telemetry. Provider adapters must cross this boundary before data reaches agents or downstream domain services.
 
-Ingestion supports bounded transient retries and a request scheduler. Scheduling is deliberately injected so production hosting can use the selected private Azure job runtime without coupling domain code to a cloud scheduler.
+Ingestion supports bounded transient retries and a request scheduler. Scheduling is deliberately injected so production hosting can use the selected private Azure job runtime without coupling domain code to a cloud scheduler. A JSON-file store is available for local/dev durability; production deployments should provide a private managed storage adapter.

@@ -5,7 +5,7 @@ import { createInstrument, createMarketDataPoint, stableInstrumentId } from "../
 import { assessFreshness, createProvenance, requireUsableProvenance } from "../src/provenance.mjs";
 import { createTelemetry } from "../src/observability.mjs";
 import { createAlpacaProvider, createCoinGeckoProvider } from "../src/providerAdapters.mjs";
-import { createMarketDataStore } from "../src/marketDataStore.mjs";
+import { createJsonFileMarketDataStore, createMarketDataStore } from "../src/marketDataStore.mjs";
 import { createIngestionScheduler } from "../src/marketDataScheduler.mjs";
 
 test("instrument identity is stable and provider-independent", () => {
@@ -83,6 +83,16 @@ test("ingestion retries transient provider failures and scheduler runs all reque
   scheduler.stop();
   assert.deepEqual(scheduled, [{ symbol: "AAPL" }, { symbol: "BTC" }]);
   assert.equal(completed.length >= 1, true);
+});
+
+test("JSON market-data store survives reload", async () => {
+  const path = "/tmp/kairos-market-data-test.json";
+  const point = createMarketDataPoint({ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", provider: "test", dataType: "price", value: 10, provenance: { evidenceId: "e1" } });
+  const first = createJsonFileMarketDataStore({ path });
+  await first.put([point]);
+  const second = createJsonFileMarketDataStore({ path });
+  assert.equal(await second.size(), 1);
+  assert.equal((await second.query({ instrumentId: "ins_a" }))[0].value, 10);
 });
 
 test("Alpaca adapter keeps credentials in headers and normalizes bars", async () => {
