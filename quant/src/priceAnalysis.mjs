@@ -29,6 +29,17 @@ export function annualizedVolatility(closes, periodsPerYear = 252) {
   return Math.sqrt(variance * periodsPerYear);
 }
 
+export function maximumDrawdown(closes) {
+  const series = finiteSeries(closes, "closes");
+  let peak = series[0];
+  let drawdown = 0;
+  for (const close of series) {
+    peak = Math.max(peak, close);
+    drawdown = Math.min(drawdown, (close - peak) / peak);
+  }
+  return Math.abs(drawdown);
+}
+
 export function analyzePrices({ closes, shortPeriod = 20, longPeriod = 50, periodsPerYear = 252 }) {
   const series = finiteSeries(closes, "closes");
   if (shortPeriod >= longPeriod) throw new RangeError("shortPeriod must be less than longPeriod");
@@ -37,6 +48,7 @@ export function analyzePrices({ closes, shortPeriod = 20, longPeriod = 50, perio
     shortSma: simpleMovingAverage(series, shortPeriod),
     longSma: simpleMovingAverage(series, longPeriod),
     annualizedVolatility: annualizedVolatility(series, periodsPerYear),
+    maximumDrawdown: maximumDrawdown(series),
     returnCount: series.length - 1
   });
 }

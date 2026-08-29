@@ -7,6 +7,8 @@ import { createSpecialistAgent } from "../src/specialistAgents.mjs";
 import { createTechnicalResearchAgent } from "../src/technicalAgent.mjs";
 import { createQuantHandlers } from "../src/quantTools.mjs";
 import { createResearchRunStore } from "../src/runStore.mjs";
+import { createFundamentalResearchAgent } from "../src/fundamentalAgent.mjs";
+import { createRiskResearchAgent } from "../src/riskAgent.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
@@ -80,4 +82,16 @@ test("technical specialist emits a validated, evidence-backed result", async () 
   assert.equal(result.analysisType, undefined);
   assert.equal(result.signal, "bullish");
   assert.equal(result.confidence >= 0 && result.confidence <= 1, true);
+});
+
+test("fundamental and risk specialists fail closed when evidence is insufficient or limits are breached", async () => {
+  const fundamental = createFundamentalResearchAgent();
+  const incomplete = await fundamental.run({ instrumentId: "ins_a", fundamentals: { revenueGrowth: 0.1 } });
+  assert.equal(incomplete.signal, "no_trade");
+  assert.equal(incomplete.missingData.includes("debtToEquity"), true);
+
+  const risk = createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3, maxDrawdownLimit: 0.1 });
+  const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
+  assert.equal(result.signal, "no_trade");
+  assert.equal(result.evidenceIds.length, 1);
 });

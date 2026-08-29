@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { analyzePrices, annualizedVolatility, percentageReturns, simpleMovingAverage } from "../src/priceAnalysis.mjs";
+import { analyzePrices, annualizedVolatility, maximumDrawdown, percentageReturns, simpleMovingAverage } from "../src/priceAnalysis.mjs";
 
 test("price analysis computes deterministic moving averages and returns", () => {
   assert.equal(simpleMovingAverage([1, 2, 3, 4], 2), 3.5);
@@ -10,6 +10,7 @@ test("price analysis computes deterministic moving averages and returns", () => 
   assert.equal(result.shortSma, 152);
   assert.equal(result.longSma, 144.5);
   assert.equal(result.returnCount, 54);
+  assert.equal(maximumDrawdown([100, 120, 90, 100]), 0.25);
 });
 
 test("price analysis rejects invalid periods and zero-price returns", () => {

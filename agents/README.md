@@ -12,6 +12,8 @@ The model router includes an HTTP Responses API adapter that reads only `OPENAI_
 
 The research orchestrator executes the complete specialist set with bounded concurrency and accepts an injectable run-state store. The included store is an in-memory development implementation; durable checkpoint persistence remains an infrastructure integration.
 
+Deterministic technical, fundamental, and risk specialists are available. They emit `no_trade` when required evidence is missing or a configured risk limit is breached.
+
 ## Validation
 
 ```bash
