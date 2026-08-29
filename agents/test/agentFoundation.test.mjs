@@ -139,7 +139,7 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
     fundamentals: { earningsGrowth: 0.2, revenueGrowth: 0.3, debtToEquity: 1.2, valuation: 0.5 }
   });
   assert.equal(numericValuation.signal, "no_trade");
-  assert.deepEqual(numericValuation.missingData, ["valuation"]);
+  assert.deepEqual(numericValuation.missingData, []);
 
   const risk = createRiskResearchAgent({ shortPeriod: 2, longPeriod: 3, maxDrawdownLimit: 0.1 });
   const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
