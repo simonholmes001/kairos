@@ -9,6 +9,8 @@ import { createQuantHandlers } from "../src/quantTools.mjs";
 import { createResearchRunStore } from "../src/runStore.mjs";
 import { createFundamentalResearchAgent } from "../src/fundamentalAgent.mjs";
 import { createRiskResearchAgent } from "../src/riskAgent.mjs";
+import { createMacroResearchAgent } from "../src/macroAgent.mjs";
+import { createSentimentResearchAgent } from "../src/sentimentAgent.mjs";
 import { createToolGateway } from "../src/toolGateway.mjs";
 
 test("agent analyses require bounded signals and evidence", () => {
@@ -94,4 +96,18 @@ test("fundamental and risk specialists fail closed when evidence is insufficient
   const result = await risk.run({ instrumentId: "ins_a", closes: [100, 120, 90, 100] });
   assert.equal(result.signal, "no_trade");
   assert.equal(result.evidenceIds.length, 1);
+});
+
+test("macro and sentiment specialists require complete, sufficiently supported inputs", async () => {
+  const macro = createMacroResearchAgent();
+  const macroResult = await macro.run({ instrumentId: "ins_a", macro: { inflation: 2, unemployment: 5, policyRate: 3, gdpGrowth: 2 } });
+  assert.equal(macroResult.signal, "bullish");
+  const missingMacro = await macro.run({ instrumentId: "ins_a", macro: { inflation: 2 } });
+  assert.equal(missingMacro.signal, "no_trade");
+
+  const sentiment = createSentimentResearchAgent({ minimumSources: 2 });
+  const sentimentResult = await sentiment.run({ instrumentId: "ins_a", sentiment: { score: -0.6, sourceIds: ["news-1", "news-2"] } });
+  assert.equal(sentimentResult.signal, "bearish");
+  const weakSentiment = await sentiment.run({ instrumentId: "ins_a", sentiment: { score: 0.8, sourceIds: ["news-1"] } });
+  assert.equal(weakSentiment.signal, "no_trade");
 });
