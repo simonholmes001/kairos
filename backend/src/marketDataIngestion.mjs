@@ -1,9 +1,10 @@
 import { createMarketDataPoint } from "./marketDataContracts.mjs";
-import { createProvenance, requireUsableProvenance } from "./provenance.mjs";
+import { assessFreshness, createProvenance, requireUsableProvenance } from "./provenance.mjs";
 
-export function createIngestionPipeline({ provider, store, clock = () => new Date(), logger = () => {}, maxAttempts = 3, sleep = async () => {} }) {
+export function createIngestionPipeline({ provider, store, clock = () => new Date(), logger = () => {}, maxAttempts = 3, sleep = async () => {}, maxAgeMs }) {
   if (!provider || typeof provider.fetch !== "function") throw new TypeError("provider.fetch is required");
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) throw new TypeError("maxAttempts must be a positive integer");
+  if (maxAgeMs !== undefined && (!Number.isFinite(maxAgeMs) || maxAgeMs < 0)) throw new TypeError("maxAgeMs must be non-negative");
   return Object.freeze({
     async ingest(request) {
       const startedAt = clock();
@@ -22,13 +23,16 @@ export function createIngestionPipeline({ provider, store, clock = () => new Dat
         if (lastError && records === undefined) throw lastError;
         if (!Array.isArray(records)) throw new TypeError("provider must return an array");
         const normalized = records.map((record) => {
-          const provenance = createProvenance({
+          let provenance = createProvenance({
             ...record.provenance,
             sourceId: record.provenance?.sourceId ?? provider.name,
             sourceAuthority: record.provenance?.sourceAuthority ?? "provider",
             retrievedAt: record.provenance?.retrievedAt ?? startedAt,
             entitlement: record.provenance?.entitlement ?? { provider: provider.name, tier: "unknown" }
           });
+          if (maxAgeMs !== undefined && assessFreshness({ sourceTime: provenance.sourceTime, retrievedAt: provenance.retrievedAt, now: clock(), maxAgeMs }) === "stale") {
+            provenance = createProvenance({ ...provenance, quality: "stale", qualityFlags: [...provenance.qualityFlags, "stale"] });
+          }
           requireUsableProvenance(provenance);
           return createMarketDataPoint({ ...record, provider: provider.name, ingestedAt: clock(), provenance });
         });

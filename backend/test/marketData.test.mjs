@@ -36,6 +36,16 @@ test("provenance marks delayed observations stale and rejects missing evidence",
   assert.throws(() => requireUsableProvenance({ evidenceId: "e2", quality: "missing" }), /missing data/);
 });
 
+test("ingestion persists stale quality when observations exceed the configured age", async () => {
+  const result = await createIngestionPipeline({
+    provider: { name: "delayed", async fetch() { return [{ instrumentId: "ins_a", asOf: "2026-01-01T00:00:00Z", dataType: "price", value: 10, provenance: { evidenceId: "e1", sourceTime: "2026-01-01T00:00:00Z" } }]; } },
+    clock: () => new Date("2026-01-01T01:00:00Z"),
+    maxAgeMs: 60_000
+  }).ingest({});
+  assert.equal(result[0].provenance.quality, "stale");
+  assert.equal(result[0].provenance.qualityFlags.includes("stale"), true);
+});
+
 test("ingestion normalizes records and isolates provider failures", async () => {
   const logs = [];
   const store = createMarketDataStore();
