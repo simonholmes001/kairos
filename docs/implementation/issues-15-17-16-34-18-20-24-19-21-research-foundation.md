@@ -16,6 +16,6 @@ This slice implements the reusable boundaries for issues #15, #17, #16, #34, #18
 
 ## Runtime status
 
-The repository remains Node-based for domain and provider boundaries, with a native Python Microsoft Agent Framework adapter under `agents/maf`. It uses the documented concurrent workflow builder, optional file checkpoint storage, and the repository-standard `OPENAI_API_KEY`.
+The repository remains Node-based for domain and provider boundaries, with a native Python Microsoft Agent Framework adapter under `agents/maf` and a Node runtime composition under `runtime`. The runtime composes configured providers, ingestion, shared storage, telemetry, and research specialists. The MAF adapter uses the documented concurrent workflow builder, optional file checkpoint storage, and the repository-standard `OPENAI_API_KEY`.
 
 The implementation remains research-only. No broker or execution capability is introduced. Production deployment still requires wiring the scheduler to the selected private Azure job runtime, replacing local JSON/file stores with private managed storage, configuring Azure Monitor/OpenTelemetry exporters, and validating provider entitlements and quotas in the dev environment.

@@ -16,7 +16,7 @@ export function createResearchOrchestrator({ agents = [], telemetry = { emit: ()
           const agent = agents[index];
           outcomes[index] = await (async () => {
         try {
-          const result = await agent.run({ instrumentId, context, correlationId });
+          const result = await agent.run({ instrumentId, ...context, correlationId });
           return { ok: true, analysis: validateAgentAnalysis(result) };
         } catch (error) {
           return { ok: false, agent: agent.name ?? "unknown", error: { code: "AGENT_FAILED", message: error.message } };
