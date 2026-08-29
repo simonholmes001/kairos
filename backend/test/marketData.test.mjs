@@ -71,6 +71,7 @@ test("ingestion persists stale quality when observations exceed the configured a
   }).ingest({});
   assert.equal(result[0].provenance.quality, "stale");
   assert.equal(result[0].provenance.qualityFlags.includes("stale"), true);
+  assert.equal(result[0].provenance.qualityFlags.filter((flag) => flag === "stale").length, 1);
 });
 
 test("ingestion normalizes records and isolates provider failures", async () => {

@@ -45,7 +45,11 @@ export function createIngestionPipeline({ provider, store, clock = () => new Dat
           });
           assertNotFuture({ sourceTime: provenance.sourceTime, retrievedAt: provenance.retrievedAt, now: clock() });
           if (maxAgeMs !== undefined && assessFreshness({ sourceTime: provenance.sourceTime, retrievedAt: provenance.retrievedAt, now: clock(), maxAgeMs }) === "stale") {
-            provenance = createProvenance({ ...provenance, quality: "stale", qualityFlags: [...provenance.qualityFlags, "stale"] });
+            provenance = createProvenance({
+              ...provenance,
+              quality: "stale",
+              qualityFlags: provenance.qualityFlags.includes("stale") ? provenance.qualityFlags : [...provenance.qualityFlags, "stale"]
+            });
           }
           requireUsableProvenance(provenance);
           return createMarketDataPoint({ ...record, provider: provider.name, ingestedAt: clock(), provenance });
